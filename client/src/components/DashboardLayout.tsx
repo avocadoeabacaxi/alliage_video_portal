@@ -104,19 +104,22 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Sidebar collapsible="icon" className="border-r-0">
-        <SidebarHeader className="h-24 justify-center border-b border-sidebar-border">
-          <div className="flex flex-col items-start gap-1 px-3 group-data-[collapsible=icon]:items-center">
+        <SidebarHeader className="h-24 justify-center border-b border-sidebar-border px-4">
+          <div className="flex flex-col gap-2 group-data-[collapsible=icon]:hidden">
             <img
               src={LOGO_ALLIAGE_EXPERIENCE}
               alt="Alliage Experience"
-              className="h-11 w-auto object-contain group-data-[collapsible=icon]:hidden"
+              className="h-10 w-auto self-start object-contain"
             />
-            <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-sidebar-foreground/55 pl-0.5 group-data-[collapsible=icon]:hidden">
-              Portal de Captação de Vídeos
-            </span>
-            <div className="hidden h-9 w-9 items-center justify-center rounded-lg bg-primary text-white shrink-0 group-data-[collapsible=icon]:flex">
-              <Video className="h-5 w-5" />
+            <div className="flex items-center gap-2">
+              <span className="h-px w-4 bg-[oklch(0.64_0.27_350)]" />
+              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-sidebar-foreground/50 whitespace-nowrap">
+                Portal de Captação
+              </span>
             </div>
+          </div>
+          <div className="hidden h-9 w-9 items-center justify-center rounded-lg bg-primary text-white shrink-0 group-data-[collapsible=icon]:flex mx-auto">
+            <Video className="h-5 w-5" />
           </div>
         </SidebarHeader>
 
