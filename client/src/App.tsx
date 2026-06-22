@@ -8,12 +8,14 @@ import DashboardLayout from "./components/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
 import Conteudos from "./pages/Conteudos";
 import ConteudoDetalhe from "./pages/ConteudoDetalhe";
+import Agenda from "./pages/Agenda";
 
 function Router() {
   return (
     <DashboardLayout>
       <Switch>
         <Route path="/" component={Dashboard} />
+        <Route path="/agenda" component={Agenda} />
         <Route path="/conteudos" component={Conteudos} />
         <Route path="/conteudos/:id" component={ConteudoDetalhe} />
         <Route path="/404" component={NotFound} />

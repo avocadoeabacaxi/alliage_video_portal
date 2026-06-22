@@ -64,6 +64,12 @@ export const contents = mysqlTable("contents", {
     .notNull(),
   gravadoPor: text("gravadoPor"),
   gravadoPorOpenId: varchar("gravadoPorOpenId", { length: 64 }),
+  /** Quem/como apareceu na filmagem: "Pessoa real" | "IA" | "Off / Locução". */
+  formatoApariciao: varchar("formatoApariciao", { length: 32 }),
+  /** Local onde foi/será gravado. */
+  localGravacao: text("localGravacao"),
+  /** Data agendada para a gravação (cronograma/agenda do mês). */
+  dataAgendada: timestamp("dataAgendada"),
   dataGravacao: timestamp("dataGravacao"),
   observacoes: text("observacoes"),
   linkAprovacao: text("linkAprovacao"),

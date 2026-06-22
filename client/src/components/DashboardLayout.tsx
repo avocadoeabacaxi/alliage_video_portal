@@ -20,7 +20,13 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, ListVideo, LogOut, Video } from "lucide-react";
+import {
+  LayoutDashboard,
+  ListVideo,
+  LogOut,
+  Video,
+  CalendarDays,
+} from "lucide-react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 import { Button } from "./ui/button";
@@ -28,6 +34,7 @@ import { LOGO_ALLIAGE, LOGO_AVOCADO } from "@/lib/domain";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
+  { icon: CalendarDays, label: "Agenda", path: "/agenda" },
   { icon: ListVideo, label: "Conteúdos", path: "/conteudos" },
 ];
 

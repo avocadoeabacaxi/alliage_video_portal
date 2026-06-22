@@ -8,6 +8,15 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/StatusBadge";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
   PRIORIDADE_LABELS,
   PRIORIDADE_STYLES,
   STATUS_FLOW,
@@ -16,12 +25,15 @@ import {
 import { useAuth } from "@/_core/hooks/useAuth";
 import {
   ArrowLeft,
+  CalendarClock,
   CheckCircle2,
   ExternalLink,
   Link2,
   Loader2,
+  MapPin,
   Save,
   User,
+  Video,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -43,6 +55,14 @@ export default function ConteudoDetalhe() {
   const [linkAprovacao, setLinkAprovacao] = useState("");
   const [linkVideoFinal, setLinkVideoFinal] = useState("");
   const [dataGravacao, setDataGravacao] = useState("");
+  const [dataAgendada, setDataAgendada] = useState("");
+  const [formatoApariciao, setFormatoApariciao] = useState("");
+  const [localGravacao, setLocalGravacao] = useState("");
+
+  // Modal exibido ao marcar como "Gravado".
+  const [gravadoModalOpen, setGravadoModalOpen] = useState(false);
+  const [modalAparicao, setModalAparicao] = useState("Pessoa real");
+  const [modalLocal, setModalLocal] = useState("");
 
   useEffect(() => {
     if (content) {
@@ -54,6 +74,13 @@ export default function ConteudoDetalhe() {
           ? new Date(content.dataGravacao).toISOString().slice(0, 10)
           : "",
       );
+      setDataAgendada(
+        content.dataAgendada
+          ? new Date(content.dataAgendada).toISOString().slice(0, 10)
+          : "",
+      );
+      setFormatoApariciao(content.formatoApariciao ?? "");
+      setLocalGravacao(content.localGravacao ?? "");
     }
   }, [content]);
 
@@ -63,16 +90,40 @@ export default function ConteudoDetalhe() {
       utils.contents.stats.invalidate();
       utils.contents.list.invalidate();
       utils.contents.responsaveis.invalidate();
+      setGravadoModalOpen(false);
       toast.success("Status atualizado");
     },
     onError: (e) => toast.error(e.message),
   });
+
+  // Ao clicar numa etapa do fluxo. Se for "Gravado" e ainda não houver
+  // registro de quem apareceu, abre o modal para coletar os dados.
+  function handleStatusClick(novoStatus: (typeof STATUS_FLOW)[number]) {
+    if (novoStatus === content?.status) return;
+    if (novoStatus === "Gravado" && !content?.formatoApariciao) {
+      setModalAparicao("Pessoa real");
+      setModalLocal(localGravacao || "");
+      setGravadoModalOpen(true);
+      return;
+    }
+    updateStatus.mutate({ id, status: novoStatus });
+  }
+
+  function confirmarGravado() {
+    updateStatus.mutate({
+      id,
+      status: "Gravado",
+      formatoApariciao: modalAparicao as any,
+      localGravacao: modalLocal.trim() || null,
+    });
+  }
 
   const updateFields = trpc.contents.updateFields.useMutation({
     onSuccess: () => {
       utils.contents.get.invalidate({ id });
       utils.contents.stats.invalidate();
       utils.contents.list.invalidate();
+      utils.contents.agendaMes.invalidate();
       toast.success("Informações salvas");
     },
     onError: (e) => toast.error(e.message),
@@ -132,6 +183,9 @@ export default function ConteudoDetalhe() {
       linkAprovacao: linkAprovacao || null,
       linkVideoFinal: linkVideoFinal || null,
       dataGravacao: dataGravacao ? new Date(dataGravacao) : null,
+      dataAgendada: dataAgendada ? new Date(dataAgendada + "T00:00:00") : null,
+      formatoApariciao: (formatoApariciao || null) as any,
+      localGravacao: localGravacao || null,
     });
   }
 
@@ -251,9 +305,7 @@ export default function ConteudoDetalhe() {
                     <button
                       key={s}
                       disabled={updateStatus.isPending}
-                      onClick={() =>
-                        !isCurrent && updateStatus.mutate({ id, status: s })
-                      }
+                      onClick={() => !isCurrent && handleStatusClick(s)}
                       className={`w-full flex items-center gap-2.5 rounded-lg border px-3 py-2 text-sm transition-all ${
                         isCurrent
                           ? "border-[oklch(0.64_0.27_350)] bg-accent font-semibold"
@@ -296,15 +348,33 @@ export default function ConteudoDetalhe() {
             </CardHeader>
             <CardContent className="text-sm">
               {content.gravadoPor ? (
-                <div>
-                  <p className="font-semibold">{content.gravadoPor}</p>
-                  {content.dataGravacao && (
-                    <p className="text-muted-foreground text-xs mt-0.5">
-                      Gravado em{" "}
-                      {new Date(content.dataGravacao).toLocaleDateString(
-                        "pt-BR",
-                      )}
-                    </p>
+                <div className="space-y-2">
+                  <div>
+                    <p className="font-semibold">{content.gravadoPor}</p>
+                    {content.dataGravacao && (
+                      <p className="text-muted-foreground text-xs mt-0.5">
+                        Gravado em{" "}
+                        {new Date(content.dataGravacao).toLocaleDateString(
+                          "pt-BR",
+                        )}
+                      </p>
+                    )}
+                  </div>
+                  {content.formatoApariciao && (
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <Video className="h-3.5 w-3.5 text-[oklch(0.64_0.27_350)]" />
+                      <span className="text-muted-foreground">Aparição:</span>
+                      <Badge variant="secondary" className="font-normal">
+                        {content.formatoApariciao}
+                      </Badge>
+                    </div>
+                  )}
+                  {content.localGravacao && (
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <MapPin className="h-3.5 w-3.5 text-[oklch(0.64_0.27_350)]" />
+                      <span className="text-muted-foreground">Local:</span>
+                      <span className="font-medium">{content.localGravacao}</span>
+                    </div>
                   )}
                 </div>
               ) : (
@@ -324,12 +394,55 @@ export default function ConteudoDetalhe() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-1.5">
-                <Label htmlFor="data">Data de gravação</Label>
+                <Label htmlFor="agendada" className="flex items-center gap-1.5">
+                  <CalendarClock className="h-4 w-4 text-[oklch(0.64_0.27_350)]" />
+                  Data agendada (cronograma)
+                </Label>
+                <Input
+                  id="agendada"
+                  type="date"
+                  value={dataAgendada}
+                  onChange={(e) => setDataAgendada(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Aparece na Agenda do mês. Deixe em branco para remover do cronograma.
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="data">Data de gravação (realizada)</Label>
                 <Input
                   id="data"
                   type="date"
                   value={dataGravacao}
                   onChange={(e) => setDataGravacao(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="flex items-center gap-1.5">
+                  <Video className="h-4 w-4 text-[oklch(0.64_0.27_350)]" />
+                  Quem apareceu na filmagem
+                </Label>
+                <select
+                  value={formatoApariciao}
+                  onChange={(e) => setFormatoApariciao(e.target.value)}
+                  className="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                >
+                  <option value="">Não informado</option>
+                  <option value="Pessoa real">Pessoa real</option>
+                  <option value="IA">IA</option>
+                  <option value="Off / Locução">Off / Locução</option>
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="local" className="flex items-center gap-1.5">
+                  <MapPin className="h-4 w-4 text-[oklch(0.64_0.27_350)]" />
+                  Onde está sendo gravado
+                </Label>
+                <Input
+                  id="local"
+                  placeholder="Ex.: Estúdio Avocado, Sede Alliage, externa..."
+                  value={localGravacao}
+                  onChange={(e) => setLocalGravacao(e.target.value)}
                 />
               </div>
               <div className="space-y-1.5">
@@ -394,6 +507,84 @@ export default function ConteudoDetalhe() {
           </Card>
         </div>
       </div>
+
+      {/* Modal: ao marcar como Gravado, registra quem apareceu e onde gravou */}
+      <Dialog open={gravadoModalOpen} onOpenChange={setGravadoModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-[oklch(0.64_0.27_350)]" />
+              Marcar como Gravado
+            </DialogTitle>
+            <DialogDescription>
+              {user?.name
+                ? `${user.name} será registrado(a) como responsável.`
+                : "Você será registrado(a) como responsável."}{" "}
+              Informe os dados da gravação.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-1">
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1.5">
+                <Video className="h-4 w-4 text-[oklch(0.64_0.27_350)]" />
+                Quem apareceu na filmagem?
+              </Label>
+              <RadioGroup
+                value={modalAparicao}
+                onValueChange={setModalAparicao}
+                className="grid grid-cols-1 gap-2"
+              >
+                {["Pessoa real", "IA", "Off / Locução"].map((op) => (
+                  <label
+                    key={op}
+                    htmlFor={`ap-${op}`}
+                    className={`flex items-center gap-2.5 rounded-lg border px-3 py-2 cursor-pointer transition-colors ${
+                      modalAparicao === op
+                        ? "border-[oklch(0.64_0.27_350)] bg-accent"
+                        : "border-border hover:bg-muted"
+                    }`}
+                  >
+                    <RadioGroupItem value={op} id={`ap-${op}`} />
+                    <span className="text-sm font-medium">{op}</span>
+                  </label>
+                ))}
+              </RadioGroup>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="modal-local" className="flex items-center gap-1.5">
+                <MapPin className="h-4 w-4 text-[oklch(0.64_0.27_350)]" />
+                Onde está sendo gravado?
+              </Label>
+              <Input
+                id="modal-local"
+                placeholder="Ex.: Estúdio Avocado, Sede Alliage, externa..."
+                value={modalLocal}
+                onChange={(e) => setModalLocal(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setGravadoModalOpen(false)}
+              disabled={updateStatus.isPending}
+            >
+              Cancelar
+            </Button>
+            <Button onClick={confirmarGravado} disabled={updateStatus.isPending}>
+              {updateStatus.isPending ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <CheckCircle2 className="h-4 w-4 mr-2" />
+              )}
+              Confirmar gravação
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -22,12 +22,13 @@ import {
   trilhaLabel,
 } from "@/lib/domain";
 import { StatusBadge } from "@/components/StatusBadge";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
-import { Search, SlidersHorizontal, X } from "lucide-react";
+import { Loader2, Search, SlidersHorizontal, X } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const ALL = "__all__";
+const PAGE_SIZE = 20;
 
 export default function Conteudos() {
   const [, setLocation] = useLocation();
@@ -38,7 +39,10 @@ export default function Conteudos() {
   const [trimestre, setTrimestre] = useState(ALL);
   const [responsavel, setResponsavel] = useState(ALL);
 
-  const filters = useMemo(
+  // Quantos itens estão visíveis no momento (cresce de 20 em 20).
+  const [visible, setVisible] = useState(PAGE_SIZE);
+
+  const baseFilters = useMemo(
     () => ({
       search: search.trim() || undefined,
       trilha: trilha === ALL ? undefined : trilha,
@@ -50,9 +54,23 @@ export default function Conteudos() {
     [search, trilha, status, prioridade, trimestre, responsavel],
   );
 
-  const { data: contents, isLoading, isError } =
+  // Sempre que os filtros mudam, volta para a primeira "página".
+  useEffect(() => {
+    setVisible(PAGE_SIZE);
+  }, [baseFilters]);
+
+  const filters = useMemo(
+    () => ({ ...baseFilters, limit: visible, offset: 0 }),
+    [baseFilters, visible],
+  );
+
+  const { data, isLoading, isFetching, isError } =
     trpc.contents.list.useQuery(filters);
   const { data: responsaveis } = trpc.contents.responsaveis.useQuery();
+
+  const contents = data?.items ?? [];
+  const total = data?.total ?? 0;
+  const hasMore = contents.length < total;
 
   const hasFilter =
     trilha !== ALL ||
@@ -79,8 +97,10 @@ export default function Conteudos() {
             Conteúdos
           </h1>
           <p className="text-muted-foreground mt-1">
-            {contents ? `${contents.length} conteúdos` : "Carregando..."} •
-            filtre, busque e abra a ficha para gerenciar a produção.
+            {data
+              ? `Mostrando ${contents.length} de ${total} conteúdos`
+              : "Carregando..."}{" "}
+            • filtre, busque e abra a ficha para gerenciar a produção.
           </p>
         </div>
       </div>
@@ -159,7 +179,7 @@ export default function Conteudos() {
             <Skeleton key={i} className="h-16" />
           ))}
         </div>
-      ) : !contents || contents.length === 0 ? (
+      ) : contents.length === 0 ? (
         <Card className="p-12 text-center text-muted-foreground">
           Nenhum conteúdo encontrado com os filtros selecionados.
         </Card>
@@ -222,6 +242,25 @@ export default function Conteudos() {
               </Card>
             </button>
           ))}
+
+          {hasMore && (
+            <div className="flex justify-center pt-3">
+              <Button
+                variant="outline"
+                onClick={() => setVisible((v) => v + PAGE_SIZE)}
+                disabled={isFetching}
+                className="min-w-48"
+              >
+                {isFetching ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Carregando...
+                  </>
+                ) : (
+                  `Carregar mais ${Math.min(PAGE_SIZE, total - contents.length)}`
+                )}
+              </Button>
+            </div>
+          )}
         </div>
       )}
       <p className="text-xs text-muted-foreground pt-1">

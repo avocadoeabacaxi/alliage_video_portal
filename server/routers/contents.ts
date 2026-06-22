@@ -4,7 +4,9 @@ import {
   getContentById,
   getDashboardStats,
   getResponsaveis,
+  listAgendaBetween,
   listContents,
+  setDataAgendada,
   updateContentFields,
   updateContentStatus,
 } from "../db";
@@ -23,6 +25,8 @@ export const contentsRouter = router({
           trimestre: z.string().optional(),
           responsavel: z.string().optional(),
           search: z.string().optional(),
+          limit: z.number().int().min(1).max(100).optional(),
+          offset: z.number().int().min(0).optional(),
         })
         .optional(),
     )
@@ -36,13 +40,46 @@ export const contentsRouter = router({
 
   responsaveis: protectedProcedure.query(() => getResponsaveis()),
 
+  // Agenda mensal: recebe ano e mês (1-12) e retorna conteúdos agendados no mês.
+  agendaMes: protectedProcedure
+    .input(z.object({ ano: z.number().int(), mes: z.number().int().min(1).max(12) }))
+    .query(({ input }) => {
+      const start = new Date(input.ano, input.mes - 1, 1);
+      const end = new Date(input.ano, input.mes, 1);
+      return listAgendaBetween(start, end);
+    }),
+
+  // Agenda ou remove a data agendada de um conteúdo.
+  agendar: protectedProcedure
+    .input(z.object({ id: z.number(), data: z.date().nullable() }))
+    .mutation(({ input }) => setDataAgendada(input.id, input.data)),
+
   updateStatus: protectedProcedure
-    .input(z.object({ id: z.number(), status: statusEnum }))
-    .mutation(({ input, ctx }) =>
-      updateContentStatus(input.id, input.status, {
-        openId: ctx.user.openId,
-        name: ctx.user.name ?? null,
+    .input(
+      z.object({
+        id: z.number(),
+        status: statusEnum,
+        // Dados opcionais informados ao marcar como "Gravado".
+        formatoApariciao: z
+          .enum(["Pessoa real", "IA", "Off / Locução"])
+          .nullable()
+          .optional(),
+        localGravacao: z.string().max(200).nullable().optional(),
       }),
+    )
+    .mutation(({ input, ctx }) =>
+      updateContentStatus(
+        input.id,
+        input.status,
+        {
+          openId: ctx.user.openId,
+          name: ctx.user.name ?? null,
+        },
+        {
+          formatoApariciao: input.formatoApariciao ?? undefined,
+          localGravacao: input.localGravacao ?? undefined,
+        },
+      ),
     ),
 
   updateFields: protectedProcedure
@@ -61,6 +98,12 @@ export const contentsRouter = router({
           .nullable()
           .optional(),
         dataGravacao: z.date().nullable().optional(),
+        dataAgendada: z.date().nullable().optional(),
+        formatoApariciao: z
+          .enum(["Pessoa real", "IA", "Off / Locução"])
+          .nullable()
+          .optional(),
+        localGravacao: z.string().max(200).nullable().optional(),
       }),
     )
     .mutation(({ input, ctx }) => {

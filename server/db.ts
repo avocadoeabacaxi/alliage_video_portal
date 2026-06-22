@@ -98,6 +98,8 @@ export type ContentFilters = {
   trimestre?: string;
   responsavel?: string; // gravadoPor (texto)
   search?: string; // busca no título
+  limit?: number;
+  offset?: number;
 };
 
 function buildConditions(f: ContentFilters) {
@@ -113,14 +115,28 @@ function buildConditions(f: ContentFilters) {
 
 export async function listContents(f: ContentFilters) {
   const db = await getDb();
-  if (!db) return [];
+  if (!db) return { items: [], total: 0 };
   const where = buildConditions(f);
-  const query = db
+
+  // Total (para saber se há mais páginas).
+  const totalRows = await db
+    .select({ c: sql<number>`count(*)` })
+    .from(contents)
+    .where(where ?? sql`1=1`);
+  const total = Number(totalRows[0]?.c ?? 0);
+
+  const limit = f.limit && f.limit > 0 ? f.limit : 20;
+  const offset = f.offset && f.offset > 0 ? f.offset : 0;
+
+  const items = await db
     .select()
     .from(contents)
-    .orderBy(asc(contents.trilha), asc(contents.ordem));
-  if (where) return query.where(where);
-  return query;
+    .where(where ?? sql`1=1`)
+    .orderBy(asc(contents.trilha), asc(contents.ordem))
+    .limit(limit)
+    .offset(offset);
+
+  return { items, total };
 }
 
 export async function getContentById(id: number) {
@@ -134,6 +150,7 @@ export async function updateContentStatus(
   id: number,
   status: string,
   user: { openId: string; name: string | null },
+  extras?: { formatoApariciao?: string; localGravacao?: string },
 ) {
   const db = await getDb();
   if (!db) throw new Error("DB indisponível");
@@ -151,6 +168,10 @@ export async function updateContentStatus(
     set.dataGravacao = new Date();
   }
 
+  // Dados informados ao marcar como Gravado (quem apareceu / onde gravou).
+  if (extras?.formatoApariciao) set.formatoApariciao = extras.formatoApariciao;
+  if (extras?.localGravacao) set.localGravacao = extras.localGravacao;
+
   await db.update(contents).set(set).where(eq(contents.id, id));
   return getContentById(id);
 }
@@ -160,6 +181,9 @@ export type ContentFieldUpdate = {
   linkAprovacao?: string | null;
   linkVideoFinal?: string | null;
   dataGravacao?: Date | null;
+  dataAgendada?: Date | null;
+  formatoApariciao?: string | null;
+  localGravacao?: string | null;
 };
 
 export async function updateContentFields(
@@ -178,6 +202,10 @@ export async function updateContentFields(
   if (fields.linkAprovacao !== undefined) set.linkAprovacao = fields.linkAprovacao;
   if (fields.linkVideoFinal !== undefined) set.linkVideoFinal = fields.linkVideoFinal;
   if (fields.dataGravacao !== undefined) set.dataGravacao = fields.dataGravacao;
+  if (fields.dataAgendada !== undefined) set.dataAgendada = fields.dataAgendada;
+  if (fields.formatoApariciao !== undefined)
+    set.formatoApariciao = fields.formatoApariciao;
+  if (fields.localGravacao !== undefined) set.localGravacao = fields.localGravacao;
 
   // Se ainda não há responsável e o usuário começou a preencher dados de produção,
   // registra automaticamente quem está atuando.
@@ -285,4 +313,47 @@ export async function getResponsaveis() {
     .from(contents)
     .where(sql`${contents.gravadoPor} is not null`);
   return rows.map((r) => r.nome).filter(Boolean) as string[];
+}
+
+/**
+ * Lista os conteúdos agendados (dataAgendada não nula) dentro de um intervalo
+ * [start, end). Usado pela Agenda mensal.
+ */
+export async function listAgendaBetween(start: Date, end: Date) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select({
+      id: contents.id,
+      titulo: contents.titulo,
+      trilha: contents.trilha,
+      etapa: contents.etapa,
+      prioridade: contents.prioridade,
+      status: contents.status,
+      portaVoz: contents.portaVoz,
+      formatoProducao: contents.formatoProducao,
+      dataAgendada: contents.dataAgendada,
+    })
+    .from(contents)
+    .where(
+      and(
+        sql`${contents.dataAgendada} is not null`,
+        sql`${contents.dataAgendada} >= ${start}`,
+        sql`${contents.dataAgendada} < ${end}`,
+      ),
+    )
+    .orderBy(asc(contents.dataAgendada), asc(contents.trilha), asc(contents.ordem));
+}
+
+/** Define ou remove (null) a data agendada de um conteúdo. */
+export async function setDataAgendada(id: number, data: Date | null) {
+  const db = await getDb();
+  if (!db) throw new Error("DB indisponível");
+  const current = await getContentById(id);
+  if (!current) throw new Error("Conteúdo não encontrado");
+  await db
+    .update(contents)
+    .set({ dataAgendada: data })
+    .where(eq(contents.id, id));
+  return getContentById(id);
 }
