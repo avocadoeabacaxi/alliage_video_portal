@@ -69,6 +69,8 @@ export const ETAPAS = ["Engajar", "Inspirar", "Educar", "Converter"] as const;
 
 export const LOGO_ALLIAGE = "/manus-storage/logo_alliage_c397aa14.png";
 export const LOGO_AVOCADO = "/manus-storage/logo_avocado_9b86bc01.png";
+export const LOGO_ALLIAGE_EXPERIENCE =
+  "/manus-storage/alliage_experience_logo_545ece7e.png";
 
 export function trilhaLabel(t?: string | null) {
   if (!t) return "-";

@@ -30,7 +30,10 @@ import {
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 import { Button } from "./ui/button";
-import { LOGO_ALLIAGE, LOGO_AVOCADO } from "@/lib/domain";
+import {
+  LOGO_ALLIAGE_EXPERIENCE,
+  LOGO_AVOCADO,
+} from "@/lib/domain";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
@@ -54,9 +57,11 @@ export default function DashboardLayout({
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-[oklch(0.27_0.06_254)] via-[oklch(0.22_0.05_254)] to-[oklch(0.18_0.04_254)] p-4">
         <div className="flex flex-col items-center gap-8 p-10 max-w-md w-full bg-white rounded-2xl shadow-2xl">
           <div className="flex items-center gap-4">
-            <img src={LOGO_ALLIAGE} alt="Alliage" className="h-9 object-contain" />
-            <div className="h-8 w-px bg-border" />
-            <img src={LOGO_AVOCADO} alt="Avocado" className="h-7 object-contain" />
+            <img
+              src={LOGO_ALLIAGE_EXPERIENCE}
+              alt="Alliage Experience"
+              className="h-16 object-contain"
+            />
           </div>
           <div className="flex flex-col items-center gap-3">
             <h1 className="text-2xl font-bold tracking-tight text-center text-primary">
@@ -99,18 +104,18 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Sidebar collapsible="icon" className="border-r-0">
-        <SidebarHeader className="h-20 justify-center border-b border-sidebar-border">
-          <div className="flex items-center gap-2 px-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[oklch(0.64_0.27_350)] text-white shrink-0">
+        <SidebarHeader className="h-24 justify-center border-b border-sidebar-border">
+          <div className="flex flex-col items-start gap-1 px-3 group-data-[collapsible=icon]:items-center">
+            <img
+              src={LOGO_ALLIAGE_EXPERIENCE}
+              alt="Alliage Experience"
+              className="h-11 w-auto object-contain group-data-[collapsible=icon]:hidden"
+            />
+            <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-sidebar-foreground/55 pl-0.5 group-data-[collapsible=icon]:hidden">
+              Portal de Captação de Vídeos
+            </span>
+            <div className="hidden h-9 w-9 items-center justify-center rounded-lg bg-primary text-white shrink-0 group-data-[collapsible=icon]:flex">
               <Video className="h-5 w-5" />
-            </div>
-            <div className="flex flex-col min-w-0 group-data-[collapsible=icon]:hidden">
-              <span className="font-bold tracking-tight text-sidebar-foreground leading-tight truncate">
-                Alliage Experience
-              </span>
-              <span className="text-xs text-sidebar-foreground/60 truncate">
-                Portal de Captação
-              </span>
             </div>
           </div>
         </SidebarHeader>
@@ -128,7 +133,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                     isActive={isActive}
                     onClick={() => setLocation(item.path)}
                     tooltip={item.label}
-                    className="h-11 font-medium text-sidebar-foreground/80 data-[active=true]:bg-sidebar-accent data-[active=true]:text-white hover:bg-sidebar-accent/60 hover:text-white"
+                    className="h-11 font-medium text-sidebar-foreground/70 data-[active=true]:bg-sidebar-accent data-[active=true]:text-white hover:bg-secondary hover:text-sidebar-foreground"
                   >
                     <item.icon className="h-4 w-4" />
                     <span>{item.label}</span>
@@ -144,7 +149,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-3 rounded-lg px-1 py-1 hover:bg-sidebar-accent/50 transition-colors w-full text-left group-data-[collapsible=icon]:justify-center focus:outline-none">
                 <Avatar className="h-9 w-9 border border-sidebar-border shrink-0">
-                  <AvatarFallback className="text-xs font-semibold bg-[oklch(0.64_0.27_350)] text-white">
+                  <AvatarFallback className="text-xs font-semibold bg-primary text-white">
                     {user?.name?.charAt(0).toUpperCase() ?? "?"}
                   </AvatarFallback>
                 </Avatar>
