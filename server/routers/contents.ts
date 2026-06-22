@@ -64,6 +64,7 @@ export const contentsRouter = router({
           .enum(["Pessoa real", "IA", "Off / Locução"])
           .nullable()
           .optional(),
+        pessoaApareceu: z.string().max(200).nullable().optional(),
         localGravacao: z.string().max(200).nullable().optional(),
       }),
     )
@@ -77,6 +78,7 @@ export const contentsRouter = router({
         },
         {
           formatoApariciao: input.formatoApariciao ?? undefined,
+          pessoaApareceu: input.pessoaApareceu ?? undefined,
           localGravacao: input.localGravacao ?? undefined,
         },
       ),
@@ -103,6 +105,7 @@ export const contentsRouter = router({
           .enum(["Pessoa real", "IA", "Off / Locução"])
           .nullable()
           .optional(),
+        pessoaApareceu: z.string().max(200).nullable().optional(),
         localGravacao: z.string().max(200).nullable().optional(),
       }),
     )

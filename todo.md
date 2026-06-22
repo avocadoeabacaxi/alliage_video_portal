@@ -33,14 +33,14 @@
 
 ## Agenda / Cronograma (nova feature)
 - [x] Adicionar coluna `dataAgendada` ao schema e aplicar migração
-- [ ] db.ts: listContentsByMonth(ano, mes) e setDataAgendada(id, data)
-- [ ] routers.ts: contents.agendaMes e contents.agendar
-- [ ] Página Agenda: calendário mensal com contagem de gravações por dia
-- [ ] Clicar no dia abre lista do que será gravado naquele dia
-- [ ] Item de menu "Agenda" na sidebar + rota
-- [ ] Agendar/editar data na ficha do conteúdo
-- [ ] Testes vitest da agenda + verificação visual
-- [ ] Checkpoint e entrega
+- [x] db.ts: listAgendaBetween(start,end) e setDataAgendada(id, data)
+- [x] routers.ts: contents.agendaMes e contents.agendar
+- [x] Página Agenda: calendário mensal com contagem de gravações por dia
+- [x] Clicar no dia abre lista do que será gravado naquele dia
+- [x] Item de menu "Agenda" na sidebar + rota
+- [x] Agendar/editar data na ficha do conteúdo
+- [x] Testes vitest da agenda + verificação visual
+- [x] Checkpoint e entrega
 
 ## Melhorias (paginação + dados de gravação)
 - [x] Adicionar colunas `formatoApariciao` (Pessoa real / IA / Off-locução) e `localGravacao` ao schema + migração
@@ -51,4 +51,14 @@
 - [x] Ficha: exibir/editar formato de aparição e local; refletido no card de quem gravou
 - [x] Testes vitest atualizados (14 testes passando) + verificação visual
 - [x] Dados de teste revertidos ao estado inicial
+- [x] Checkpoint e entrega
+
+## Nome da pessoa filmada (Pessoa real)
+- [x] Coluna `pessoaApareceu` no schema + migração aplicada
+- [x] Backend (updateStatus/updateFields) aceita pessoaApareceu
+- [x] Campo de nome no modal de Gravado (condicional a "Pessoa real", obrigatório)
+- [x] Campo de nome editável na ficha (condicional a "Pessoa real")
+- [x] Exibição "Pessoa filmada" no card Quem gravou
+- [x] Teste vitest do nome da pessoa (15 testes passando)
+- [x] Dados de teste revertidos
 - [x] Checkpoint e entrega

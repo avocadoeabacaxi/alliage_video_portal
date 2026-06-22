@@ -57,11 +57,13 @@ export default function ConteudoDetalhe() {
   const [dataGravacao, setDataGravacao] = useState("");
   const [dataAgendada, setDataAgendada] = useState("");
   const [formatoApariciao, setFormatoApariciao] = useState("");
+  const [pessoaApareceu, setPessoaApareceu] = useState("");
   const [localGravacao, setLocalGravacao] = useState("");
 
   // Modal exibido ao marcar como "Gravado".
   const [gravadoModalOpen, setGravadoModalOpen] = useState(false);
   const [modalAparicao, setModalAparicao] = useState("Pessoa real");
+  const [modalPessoa, setModalPessoa] = useState("");
   const [modalLocal, setModalLocal] = useState("");
 
   useEffect(() => {
@@ -80,6 +82,7 @@ export default function ConteudoDetalhe() {
           : "",
       );
       setFormatoApariciao(content.formatoApariciao ?? "");
+      setPessoaApareceu(content.pessoaApareceu ?? "");
       setLocalGravacao(content.localGravacao ?? "");
     }
   }, [content]);
@@ -102,6 +105,7 @@ export default function ConteudoDetalhe() {
     if (novoStatus === content?.status) return;
     if (novoStatus === "Gravado" && !content?.formatoApariciao) {
       setModalAparicao("Pessoa real");
+      setModalPessoa(pessoaApareceu || "");
       setModalLocal(localGravacao || "");
       setGravadoModalOpen(true);
       return;
@@ -110,10 +114,16 @@ export default function ConteudoDetalhe() {
   }
 
   function confirmarGravado() {
+    if (modalAparicao === "Pessoa real" && !modalPessoa.trim()) {
+      toast.error("Informe o nome da pessoa que apareceu na filmagem.");
+      return;
+    }
     updateStatus.mutate({
       id,
       status: "Gravado",
       formatoApariciao: modalAparicao as any,
+      pessoaApareceu:
+        modalAparicao === "Pessoa real" ? modalPessoa.trim() || null : null,
       localGravacao: modalLocal.trim() || null,
     });
   }
@@ -185,6 +195,8 @@ export default function ConteudoDetalhe() {
       dataGravacao: dataGravacao ? new Date(dataGravacao) : null,
       dataAgendada: dataAgendada ? new Date(dataAgendada + "T00:00:00") : null,
       formatoApariciao: (formatoApariciao || null) as any,
+      pessoaApareceu:
+        formatoApariciao === "Pessoa real" ? pessoaApareceu || null : null,
       localGravacao: localGravacao || null,
     });
   }
@@ -369,6 +381,13 @@ export default function ConteudoDetalhe() {
                       </Badge>
                     </div>
                   )}
+                  {content.pessoaApareceu && (
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <User className="h-3.5 w-3.5 text-[oklch(0.64_0.27_350)]" />
+                      <span className="text-muted-foreground">Pessoa filmada:</span>
+                      <span className="font-medium">{content.pessoaApareceu}</span>
+                    </div>
+                  )}
                   {content.localGravacao && (
                     <div className="flex items-center gap-1.5 text-xs">
                       <MapPin className="h-3.5 w-3.5 text-[oklch(0.64_0.27_350)]" />
@@ -433,6 +452,20 @@ export default function ConteudoDetalhe() {
                   <option value="Off / Locução">Off / Locução</option>
                 </select>
               </div>
+              {formatoApariciao === "Pessoa real" && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="pessoa" className="flex items-center gap-1.5">
+                    <User className="h-4 w-4 text-[oklch(0.64_0.27_350)]" />
+                    Nome da pessoa que apareceu
+                  </Label>
+                  <Input
+                    id="pessoa"
+                    placeholder="Ex.: Dra. Ana Souza, Dr. Carlos..."
+                    value={pessoaApareceu}
+                    onChange={(e) => setPessoaApareceu(e.target.value)}
+                  />
+                </div>
+              )}
               <div className="space-y-1.5">
                 <Label htmlFor="local" className="flex items-center gap-1.5">
                   <MapPin className="h-4 w-4 text-[oklch(0.64_0.27_350)]" />
@@ -551,6 +584,22 @@ export default function ConteudoDetalhe() {
                 ))}
               </RadioGroup>
             </div>
+
+            {modalAparicao === "Pessoa real" && (
+              <div className="space-y-1.5">
+                <Label htmlFor="modal-pessoa" className="flex items-center gap-1.5">
+                  <User className="h-4 w-4 text-[oklch(0.64_0.27_350)]" />
+                  Nome da pessoa que apareceu
+                </Label>
+                <Input
+                  id="modal-pessoa"
+                  placeholder="Ex.: Dra. Ana Souza, Dr. Carlos..."
+                  value={modalPessoa}
+                  onChange={(e) => setModalPessoa(e.target.value)}
+                  autoFocus
+                />
+              </div>
+            )}
 
             <div className="space-y-1.5">
               <Label htmlFor="modal-local" className="flex items-center gap-1.5">

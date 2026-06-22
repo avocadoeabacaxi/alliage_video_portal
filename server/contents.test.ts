@@ -13,6 +13,7 @@ type Row = {
   linkVideoFinal: string | null;
   dataAgendada: Date | null;
   formatoApariciao: string | null;
+  pessoaApareceu: string | null;
   localGravacao: string | null;
 };
 
@@ -30,6 +31,7 @@ function freshRow(id: number): Row {
     linkVideoFinal: null,
     dataAgendada: null,
     formatoApariciao: null,
+    pessoaApareceu: null,
     localGravacao: null,
   };
 }
@@ -64,7 +66,11 @@ vi.mock("./db", () => {
         id: number,
         status: string,
         user: { openId: string; name: string | null },
-        extras?: { formatoApariciao?: string; localGravacao?: string },
+        extras?: {
+          formatoApariciao?: string;
+          pessoaApareceu?: string;
+          localGravacao?: string;
+        },
       ) => {
         const row = store.get(id)!;
         row.status = status;
@@ -74,6 +80,8 @@ vi.mock("./db", () => {
           row.dataGravacao = new Date();
         }
         if (extras?.formatoApariciao) row.formatoApariciao = extras.formatoApariciao;
+        if (extras?.pessoaApareceu !== undefined)
+          row.pessoaApareceu = extras.pessoaApareceu;
         if (extras?.localGravacao) row.localGravacao = extras.localGravacao;
         return row;
       },
@@ -168,6 +176,19 @@ describe("contents procedures (autenticado)", () => {
     });
     expect(updated?.formatoApariciao).toBe("IA");
     expect(updated?.localGravacao).toBe("Estúdio Avocado");
+  });
+
+  it("registra o nome da pessoa que apareceu quando é Pessoa real", async () => {
+    const caller = appRouter.createCaller(ctxFor(authUser));
+    const updated = await caller.contents.updateStatus({
+      id: 1,
+      status: "Gravado",
+      formatoApariciao: "Pessoa real",
+      pessoaApareceu: "Dra. Ana Souza",
+      localGravacao: "Sede Alliage",
+    });
+    expect(updated?.formatoApariciao).toBe("Pessoa real");
+    expect(updated?.pessoaApareceu).toBe("Dra. Ana Souza");
   });
 
   it("rejeita formato de aparição inválido", async () => {

@@ -150,7 +150,11 @@ export async function updateContentStatus(
   id: number,
   status: string,
   user: { openId: string; name: string | null },
-  extras?: { formatoApariciao?: string; localGravacao?: string },
+  extras?: {
+    formatoApariciao?: string;
+    pessoaApareceu?: string;
+    localGravacao?: string;
+  },
 ) {
   const db = await getDb();
   if (!db) throw new Error("DB indisponível");
@@ -170,6 +174,8 @@ export async function updateContentStatus(
 
   // Dados informados ao marcar como Gravado (quem apareceu / onde gravou).
   if (extras?.formatoApariciao) set.formatoApariciao = extras.formatoApariciao;
+  if (extras?.pessoaApareceu !== undefined)
+    set.pessoaApareceu = extras.pessoaApareceu;
   if (extras?.localGravacao) set.localGravacao = extras.localGravacao;
 
   await db.update(contents).set(set).where(eq(contents.id, id));
@@ -183,6 +189,7 @@ export type ContentFieldUpdate = {
   dataGravacao?: Date | null;
   dataAgendada?: Date | null;
   formatoApariciao?: string | null;
+  pessoaApareceu?: string | null;
   localGravacao?: string | null;
 };
 
@@ -205,6 +212,8 @@ export async function updateContentFields(
   if (fields.dataAgendada !== undefined) set.dataAgendada = fields.dataAgendada;
   if (fields.formatoApariciao !== undefined)
     set.formatoApariciao = fields.formatoApariciao;
+  if (fields.pessoaApareceu !== undefined)
+    set.pessoaApareceu = fields.pessoaApareceu;
   if (fields.localGravacao !== undefined) set.localGravacao = fields.localGravacao;
 
   // Se ainda não há responsável e o usuário começou a preencher dados de produção,
