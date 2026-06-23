@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/StatusBadge";
+import { CategoriaHeroBadge, CategoriaHeroSelector } from "@/components/CategoriaHero";
 import {
   Dialog,
   DialogContent,
@@ -59,6 +60,7 @@ export default function ConteudoDetalhe() {
   const [formatoApariciao, setFormatoApariciao] = useState("");
   const [pessoaApareceu, setPessoaApareceu] = useState("");
   const [localGravacao, setLocalGravacao] = useState("");
+  const [categoriaHero, setCategoriaHero] = useState<string | null>(null);
 
   // Modal exibido ao marcar como "Gravado".
   const [gravadoModalOpen, setGravadoModalOpen] = useState(false);
@@ -84,6 +86,7 @@ export default function ConteudoDetalhe() {
       setFormatoApariciao(content.formatoApariciao ?? "");
       setPessoaApareceu(content.pessoaApareceu ?? "");
       setLocalGravacao(content.localGravacao ?? "");
+      setCategoriaHero((content as any).categoriaHero ?? null);
     }
   }, [content]);
 
@@ -198,6 +201,7 @@ export default function ConteudoDetalhe() {
       pessoaApareceu:
         formatoApariciao === "Pessoa real" ? pessoaApareceu || null : null,
       localGravacao: localGravacao || null,
+      categoriaHero: (categoriaHero || null) as any,
     });
   }
 
@@ -211,7 +215,12 @@ export default function ConteudoDetalhe() {
         >
           <ArrowLeft className="h-4 w-4 mr-1" /> Voltar para a lista
         </Button>
-        <StatusBadge status={content.status} className="text-sm px-3 py-1" />
+        <div className="flex items-center gap-2">
+          {categoriaHero && (
+            <CategoriaHeroBadge categoria={categoriaHero} size="md" />
+          )}
+          <StatusBadge status={content.status} className="text-sm px-3 py-1" />
+        </div>
       </div>
 
       {/* Cabeçalho */}
@@ -412,6 +421,13 @@ export default function ConteudoDetalhe() {
               <CardTitle className="text-base">Registros da equipe</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Categoria Hero */}
+              <CategoriaHeroSelector
+                value={categoriaHero}
+                onChange={setCategoriaHero}
+                disabled={updateFields.isPending}
+              />
+
               <div className="space-y-1.5">
                 <Label htmlFor="agendada" className="flex items-center gap-1.5">
                   <CalendarClock className="h-4 w-4 text-[oklch(0.64_0.27_350)]" />

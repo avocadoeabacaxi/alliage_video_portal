@@ -67,6 +67,24 @@ export const TRIMESTRES = [
 
 export const ETAPAS = ["Engajar", "Inspirar", "Educar", "Converter"] as const;
 
+// Categorias temáticas "Hero" (destaque dourado). Conteúdo pode ter uma ou nenhuma.
+export const CATEGORIAS_HERO = [
+  "Odontologia Digital",
+  "Excelência Clínica",
+  "Negócios e Carreiras",
+] as const;
+export type CategoriaHero = (typeof CATEGORIAS_HERO)[number];
+
+// Ícone (lucide) e label curta de cada categoria.
+export const CATEGORIA_HERO_META: Record<
+  string,
+  { icon: "Stethoscope" | "Sparkles" | "Briefcase"; label: string; short: string; color: string }
+> = {
+  "Odontologia Digital": { icon: "Stethoscope", label: "Odontologia Digital", short: "Odonto Digital", color: "text-blue-600" },
+  "Excelência Clínica": { icon: "Sparkles", label: "Excelência Clínica", short: "Excelência Clínica", color: "text-amber-500" },
+  "Negócios e Carreiras": { icon: "Briefcase", label: "Negócios e Carreiras", short: "Negócios", color: "text-emerald-600" },
+};
+
 export const LOGO_ALLIAGE = "/manus-storage/logo_alliage_c397aa14.png";
 export const LOGO_AVOCADO = "/manus-storage/logo_avocado_9b86bc01.png";
 export const LOGO_ALLIAGE_EXPERIENCE =

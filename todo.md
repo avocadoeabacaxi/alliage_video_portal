@@ -62,3 +62,25 @@
 - [x] Teste vitest do nome da pessoa (15 testes passando)
 - [x] Dados de teste revertidos
 - [x] Checkpoint e entrega
+
+## Filtros ampliados + criar/excluir conteúdo
+- [ ] Backend: filtro por etapa (Engajar/Inspirar/Educar/Converter) e por bloco no listContents
+- [ ] Backend: procedure createContent (admin) com todos os campos da pauta
+- [ ] Backend: procedure deleteContent (admin) com confirmação
+- [ ] Frontend: adicionar filtros Etapa e Bloco na lista
+- [ ] Frontend: botão + formulário "Novo conteúdo"
+- [ ] Frontend: excluir conteúdo com diálogo de confirmação
+- [ ] Testes vitest atualizados + verificação visual
+- [ ] Checkpoint e entrega
+
+## Categorias Hero
+- [x] Coluna `categoriaHero` no schema (enum nullable: Odontologia Digital, Excelência Clínica, Negócios e Carreiras) + migração aplicada
+- [x] Backend: db.ts e routers/contents.ts com filtro e updateFields para categoriaHero
+- [x] domain.ts: constantes CATEGORIAS_HERO e CATEGORIA_HERO_META (ícones Stethoscope/Sparkles/Briefcase)
+- [x] Componente CategoriaHeroBadge (badge dourada) e CategoriaHeroSelector (seletor de 3 ícones)
+- [x] Ficha (ConteudoDetalhe.tsx): CategoriaHeroSelector integrado, badge no cabeçalho, salvo em updateFields
+- [x] Lista (Conteudos.tsx): destaque dourado nos cards Hero + filtro por Categoria Hero
+- [x] Agenda (Agenda.tsx): destaque dourado nos itens do painel lateral + borda dourada nas células do calendário
+- [x] Testes: categoriaHero adicionado ao Row/freshRow, 3 novos testes (salva, remove, rejeita inválido) — 22 testes passando
+- [x] TypeScript: pnpm check sem erros
+- [x] Checkpoint e entrega

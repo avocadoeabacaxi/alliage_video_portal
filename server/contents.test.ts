@@ -15,6 +15,7 @@ type Row = {
   formatoApariciao: string | null;
   pessoaApareceu: string | null;
   localGravacao: string | null;
+  categoriaHero: string | null;
 };
 
 const store = new Map<number, Row>();
@@ -33,6 +34,7 @@ function freshRow(id: number): Row {
     formatoApariciao: null,
     pessoaApareceu: null,
     localGravacao: null,
+    categoriaHero: null,
   };
 }
 
@@ -105,6 +107,18 @@ vi.mock("./db", () => {
       const row = store.get(id)!;
       row.dataAgendada = data;
       return row;
+    }),
+    getEtapas: vi.fn(async () => ["Engajar", "Inspirar", "Educar", "Converter"]),
+    getBlocos: vi.fn(async () => ["Bloco 1", "Bloco 2"]),
+    createContent: vi.fn(async (input: any) => {
+      const id = Math.max(0, ...Array.from(store.keys())) + 1;
+      const row = freshRow(id);
+      store.set(id, row);
+      return { ...row, ...input };
+    }),
+    deleteContent: vi.fn(async (id: number) => {
+      store.delete(id);
+      return { success: true };
     }),
   };
 });
@@ -242,6 +256,36 @@ describe("contents procedures (autenticado)", () => {
       caller.contents.updateFields({ id: 1, linkAprovacao: "não-é-url" }),
     ).rejects.toBeTruthy();
   });
+
+  it("salva categoriaHero válida e persiste no registro", async () => {
+    const caller = appRouter.createCaller(ctxFor(authUser));
+    const updated = await caller.contents.updateFields({
+      id: 1,
+      categoriaHero: "Odontologia Digital",
+    });
+    expect(updated?.categoriaHero).toBe("Odontologia Digital");
+  });
+
+  it("remove categoriaHero ao passar null", async () => {
+    store.get(1)!.categoriaHero = "Excelência Clínica";
+    const caller = appRouter.createCaller(ctxFor(authUser));
+    const updated = await caller.contents.updateFields({
+      id: 1,
+      categoriaHero: null,
+    });
+    expect(updated?.categoriaHero).toBeNull();
+  });
+
+  it("rejeita categoriaHero com valor inválido", async () => {
+    const caller = appRouter.createCaller(ctxFor(authUser));
+    await expect(
+      caller.contents.updateFields({
+        id: 1,
+        // @ts-expect-error valor inválido proposital
+        categoriaHero: "Categoria Inexistente",
+      }),
+    ).rejects.toBeTruthy();
+  });
 });
 
 describe("agenda (cronograma mensal)", () => {
@@ -274,6 +318,44 @@ describe("agenda (cronograma mensal)", () => {
   });
 });
 
+describe("criar e excluir conteúdos", () => {
+  it("cria um novo conteúdo e ele aparece na listagem", async () => {
+    const caller = appRouter.createCaller(ctxFor(authUser));
+    const created = await caller.contents.create({
+      trilha: "Saevo",
+      etapa: "Educar",
+      bloco: "Bloco novo",
+      titulo: "Conteúdo de teste",
+    });
+    expect(created).toBeTruthy();
+    const res = await caller.contents.list({});
+    expect(res.total).toBe(2);
+  });
+
+  it("rejeita criar sem trilha/etapa/título", async () => {
+    const caller = appRouter.createCaller(ctxFor(authUser));
+    await expect(
+      // @ts-expect-error faltando campos obrigatórios proposital
+      caller.contents.create({ bloco: "x" }),
+    ).rejects.toBeTruthy();
+  });
+
+  it("exclui um conteúdo existente", async () => {
+    const caller = appRouter.createCaller(ctxFor(authUser));
+    await caller.contents.delete({ id: 1 });
+    const res = await caller.contents.list({});
+    expect(res.total).toBe(0);
+  });
+
+  it("lista etapas e blocos para os filtros", async () => {
+    const caller = appRouter.createCaller(ctxFor(authUser));
+    const etapas = await caller.contents.etapas();
+    expect(etapas).toContain("Engajar");
+    const blocos = await caller.contents.blocos({ trilha: "Saevo" });
+    expect(Array.isArray(blocos)).toBe(true);
+  });
+});
+
 describe("contents procedures (não autenticado)", () => {
   it("bloqueia acesso sem usuário", async () => {
     const caller = appRouter.createCaller(ctxFor(null));
@@ -281,5 +363,14 @@ describe("contents procedures (não autenticado)", () => {
     await expect(
       caller.contents.updateStatus({ id: 1, status: "Gravado" }),
     ).rejects.toBeTruthy();
+    await expect(
+      caller.contents.create({
+        trilha: "Saevo",
+        etapa: "Educar",
+        bloco: "b",
+        titulo: "t",
+      }),
+    ).rejects.toBeTruthy();
+    await expect(caller.contents.delete({ id: 1 })).rejects.toBeTruthy();
   });
 });

@@ -1,8 +1,12 @@
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import {
+  createContent,
+  deleteContent,
+  getBlocos,
   getContentById,
   getDashboardStats,
+  getEtapas,
   getResponsaveis,
   listAgendaBetween,
   listContents,
@@ -23,7 +27,10 @@ export const contentsRouter = router({
           status: z.string().optional(),
           prioridade: z.string().optional(),
           trimestre: z.string().optional(),
+          etapa: z.string().optional(),
+          bloco: z.string().optional(),
           responsavel: z.string().optional(),
+          categoriaHero: z.string().optional(),
           search: z.string().optional(),
           limit: z.number().int().min(1).max(100).optional(),
           offset: z.number().int().min(0).optional(),
@@ -39,6 +46,39 @@ export const contentsRouter = router({
   stats: protectedProcedure.query(() => getDashboardStats()),
 
   responsaveis: protectedProcedure.query(() => getResponsaveis()),
+
+  etapas: protectedProcedure.query(() => getEtapas()),
+
+  blocos: protectedProcedure
+    .input(z.object({ trilha: z.string().optional() }).optional())
+    .query(({ input }) => getBlocos(input?.trilha)),
+
+  create: protectedProcedure
+    .input(
+      z.object({
+        trilha: z.string().min(1, "Selecione a trilha"),
+        etapa: z.string().min(1, "Selecione a etapa"),
+        bloco: z.string().min(1, "Informe o bloco"),
+        titulo: z.string().min(1, "Informe o título"),
+        publico: z.string().nullable().optional(),
+        formatoProducao: z.string().nullable().optional(),
+        portaVoz: z.string().nullable().optional(),
+        prioridade: z.string().nullable().optional(),
+        trimestre: z.string().nullable().optional(),
+        gancho: z.string().nullable().optional(),
+        topico1: z.string().nullable().optional(),
+        topico2: z.string().nullable().optional(),
+        topico3: z.string().nullable().optional(),
+        palavrasChave: z.string().nullable().optional(),
+        dadoMercado: z.string().nullable().optional(),
+        cta: z.string().nullable().optional(),
+      }),
+    )
+    .mutation(({ input }) => createContent(input)),
+
+  delete: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(({ input }) => deleteContent(input.id)),
 
   // Agenda mensal: recebe ano e mês (1-12) e retorna conteúdos agendados no mês.
   agendaMes: protectedProcedure
@@ -88,6 +128,10 @@ export const contentsRouter = router({
     .input(
       z.object({
         id: z.number(),
+        categoriaHero: z
+          .enum(["Odontologia Digital", "Excelência Clínica", "Negócios e Carreiras"])
+          .nullable()
+          .optional(),
         observacoes: z.string().max(2000).nullable().optional(),
         linkAprovacao: z
           .string()

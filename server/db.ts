@@ -96,7 +96,10 @@ export type ContentFilters = {
   status?: string;
   prioridade?: string;
   trimestre?: string;
+  etapa?: string; // finalidade: Engajar/Inspirar/Educar/Converter
+  bloco?: string;
   responsavel?: string; // gravadoPor (texto)
+  categoriaHero?: string; // Odontologia Digital / Excelência Clínica / Negócios e Carreiras
   search?: string; // busca no título
   limit?: number;
   offset?: number;
@@ -108,7 +111,10 @@ function buildConditions(f: ContentFilters) {
   if (f.status) conds.push(eq(contents.status, f.status as any));
   if (f.prioridade) conds.push(eq(contents.prioridade, f.prioridade));
   if (f.trimestre) conds.push(eq(contents.trimestre, f.trimestre));
+  if (f.etapa) conds.push(eq(contents.etapa, f.etapa));
+  if (f.bloco) conds.push(eq(contents.bloco, f.bloco));
   if (f.responsavel) conds.push(eq(contents.gravadoPor, f.responsavel));
+  if (f.categoriaHero) conds.push(eq(contents.categoriaHero, f.categoriaHero));
   if (f.search) conds.push(like(contents.titulo, `%${f.search}%`));
   return conds.length ? and(...conds) : undefined;
 }
@@ -183,6 +189,7 @@ export async function updateContentStatus(
 }
 
 export type ContentFieldUpdate = {
+  categoriaHero?: string | null;
   observacoes?: string | null;
   linkAprovacao?: string | null;
   linkVideoFinal?: string | null;
@@ -205,6 +212,7 @@ export async function updateContentFields(
   if (!current) throw new Error("Conteúdo não encontrado");
 
   const set: Record<string, unknown> = {};
+  if (fields.categoriaHero !== undefined) set.categoriaHero = fields.categoriaHero;
   if (fields.observacoes !== undefined) set.observacoes = fields.observacoes;
   if (fields.linkAprovacao !== undefined) set.linkAprovacao = fields.linkAprovacao;
   if (fields.linkVideoFinal !== undefined) set.linkVideoFinal = fields.linkVideoFinal;
@@ -324,6 +332,94 @@ export async function getResponsaveis() {
   return rows.map((r) => r.nome).filter(Boolean) as string[];
 }
 
+/** Lista distinta de etapas (finalidade) presentes na base. */
+export async function getEtapas() {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db.selectDistinct({ v: contents.etapa }).from(contents).orderBy(asc(contents.etapa));
+  return rows.map((r) => r.v).filter(Boolean) as string[];
+}
+
+/** Lista distinta de blocos presentes na base (opcionalmente filtrada por trilha). */
+export async function getBlocos(trilha?: string) {
+  const db = await getDb();
+  if (!db) return [];
+  const where = trilha ? eq(contents.trilha, trilha) : undefined;
+  const rows = await db
+    .selectDistinct({ v: contents.bloco })
+    .from(contents)
+    .where(where ?? sql`1=1`)
+    .orderBy(asc(contents.bloco));
+  return rows.map((r) => r.v).filter(Boolean) as string[];
+}
+
+// ---------------- Criar / Excluir conteúdo ----------------
+
+export type NewContentInput = {
+  trilha: string;
+  etapa: string;
+  bloco: string;
+  titulo: string;
+  publico?: string | null;
+  formatoProducao?: string | null;
+  portaVoz?: string | null;
+  prioridade?: string | null;
+  trimestre?: string | null;
+  gancho?: string | null;
+  topico1?: string | null;
+  topico2?: string | null;
+  topico3?: string | null;
+  palavrasChave?: string | null;
+  dadoMercado?: string | null;
+  cta?: string | null;
+};
+
+/** Cria um novo conteúdo. A ordem é calculada como max(ordem)+1 dentro da trilha. */
+export async function createContent(input: NewContentInput) {
+  const db = await getDb();
+  if (!db) throw new Error("DB indisponível");
+
+  const maxRows = await db
+    .select({ m: sql<number>`coalesce(max(${contents.ordem}), 0)` })
+    .from(contents)
+    .where(eq(contents.trilha, input.trilha));
+  const nextOrdem = Number(maxRows[0]?.m ?? 0) + 1;
+
+  const result = await db.insert(contents).values({
+    trilha: input.trilha,
+    ordem: nextOrdem,
+    etapa: input.etapa,
+    bloco: input.bloco,
+    titulo: input.titulo,
+    publico: input.publico ?? null,
+    formatoProducao: input.formatoProducao ?? null,
+    portaVoz: input.portaVoz ?? null,
+    prioridade: input.prioridade ?? null,
+    trimestre: input.trimestre ?? null,
+    gancho: input.gancho ?? null,
+    topico1: input.topico1 ?? null,
+    topico2: input.topico2 ?? null,
+    topico3: input.topico3 ?? null,
+    palavrasChave: input.palavrasChave ?? null,
+    dadoMercado: input.dadoMercado ?? null,
+    cta: input.cta ?? null,
+    status: "A gravar",
+  });
+
+  const insertId = Number((result as any)?.[0]?.insertId ?? (result as any)?.insertId ?? 0);
+  return insertId ? getContentById(insertId) : undefined;
+}
+
+/** Exclui um conteúdo pelo id. Retorna true se removido. */
+export async function deleteContent(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB indisponível");
+  const current = await getContentById(id);
+  if (!current) throw new Error("Conteúdo não encontrado");
+  await db.delete(contents).where(eq(contents.id, id));
+  return true;
+}
+
 /**
  * Lista os conteúdos agendados (dataAgendada não nula) dentro de um intervalo
  * [start, end). Usado pela Agenda mensal.
@@ -341,6 +437,7 @@ export async function listAgendaBetween(start: Date, end: Date) {
       status: contents.status,
       portaVoz: contents.portaVoz,
       formatoProducao: contents.formatoProducao,
+      categoriaHero: contents.categoriaHero,
       dataAgendada: contents.dataAgendada,
     })
     .from(contents)

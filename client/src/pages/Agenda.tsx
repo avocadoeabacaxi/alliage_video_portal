@@ -13,6 +13,7 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { StatusBadge } from "@/components/StatusBadge";
+import { CategoriaHeroBadge } from "@/components/CategoriaHero";
 import {
   TRILHA_COLORS,
   trilhaLabel,
@@ -53,6 +54,7 @@ type AgendaItem = {
   portaVoz: string | null;
   formatoProducao: string | null;
   dataAgendada: Date | null;
+  categoriaHero?: string | null;
 };
 
 function dayKey(d: Date) {
@@ -207,6 +209,8 @@ export default function Agenda() {
               const trilhasNoDia = Array.from(
                 new Set(items.map((i) => i.trilha)),
               );
+              // Verifica se algum item do dia é Hero
+              const hasHero = items.some((i) => i.categoriaHero);
               return (
                 <button
                   key={idx}
@@ -216,7 +220,9 @@ export default function Agenda() {
                     "min-h-24 rounded-lg border p-2 text-left transition-all flex flex-col gap-1",
                     inMonth ? "bg-card" : "bg-muted/30",
                     count > 0
-                      ? "border-[oklch(0.64_0.27_350)]/30 hover:border-[oklch(0.64_0.27_350)] hover:shadow-md cursor-pointer active:scale-[0.98]"
+                      ? hasHero
+                        ? "border-amber-300 hover:border-amber-400 hover:shadow-md hover:shadow-amber-100 cursor-pointer active:scale-[0.98]"
+                        : "border-[oklch(0.64_0.27_350)]/30 hover:border-[oklch(0.64_0.27_350)] hover:shadow-md cursor-pointer active:scale-[0.98]"
                       : "border-border cursor-default",
                     isToday ? "ring-2 ring-[oklch(0.27_0.06_254)]/40" : "",
                   ].join(" ")}
@@ -234,7 +240,11 @@ export default function Agenda() {
                       {date.getDate()}
                     </span>
                     {count > 0 && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-[oklch(0.64_0.27_350)] px-1.5 py-0.5 text-[10px] font-bold text-white">
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold text-white ${
+                          hasHero ? "bg-amber-500" : "bg-[oklch(0.64_0.27_350)]"
+                        }`}
+                      >
                         <Video className="h-2.5 w-2.5" />
                         {count}
                       </span>
@@ -301,44 +311,54 @@ function DaySheet({
         </SheetHeader>
 
         <div className="px-4 pb-6 space-y-3">
-          {items.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setLocation(`/conteudos/${item.id}`)}
-              className="w-full text-left rounded-xl border bg-card p-3 hover:shadow-md hover:border-[oklch(0.64_0.27_350)]/40 transition-all active:scale-[0.99] group"
-            >
-              <div className="flex items-center gap-2 mb-2 flex-wrap">
-                <Badge
-                  className="text-white border-0 text-[11px]"
-                  style={{
-                    backgroundColor: TRILHA_COLORS[item.trilha] ?? "#64748b",
-                  }}
-                >
-                  {trilhaLabel(item.trilha)}
-                </Badge>
-                <StatusBadge status={item.status} />
-                {item.prioridade && (
-                  <span
-                    className={[
-                      "inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium",
-                      PRIORIDADE_STYLES[item.prioridade] ?? "",
-                    ].join(" ")}
+          {items.map((item) => {
+            const isHero = !!item.categoriaHero;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setLocation(`/conteudos/${item.id}`)}
+                className={`w-full text-left rounded-xl border p-3 hover:shadow-md transition-all active:scale-[0.99] group ${
+                  isHero
+                    ? "border-amber-300 bg-amber-50/40 hover:border-amber-400 hover:shadow-amber-100"
+                    : "bg-card hover:border-[oklch(0.64_0.27_350)]/40"
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                  <Badge
+                    className="text-white border-0 text-[11px]"
+                    style={{
+                      backgroundColor: TRILHA_COLORS[item.trilha] ?? "#64748b",
+                    }}
                   >
-                    {prioridadeLabel(item.prioridade)}
+                    {trilhaLabel(item.trilha)}
+                  </Badge>
+                  <StatusBadge status={item.status} />
+                  {item.prioridade && (
+                    <span
+                      className={[
+                        "inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium",
+                        PRIORIDADE_STYLES[item.prioridade] ?? "",
+                      ].join(" ")}
+                    >
+                      {prioridadeLabel(item.prioridade)}
+                    </span>
+                  )}
+                  {isHero && (
+                    <CategoriaHeroBadge categoria={item.categoriaHero!} />
+                  )}
+                </div>
+                <p className="font-medium leading-snug text-foreground">
+                  {item.titulo}
+                </p>
+                <div className="mt-1.5 flex items-center justify-between text-xs text-muted-foreground">
+                  <span className="truncate">
+                    {item.portaVoz ? `Porta-voz: ${item.portaVoz}` : item.etapa}
                   </span>
-                )}
-              </div>
-              <p className="font-medium leading-snug text-foreground">
-                {item.titulo}
-              </p>
-              <div className="mt-1.5 flex items-center justify-between text-xs text-muted-foreground">
-                <span className="truncate">
-                  {item.portaVoz ? `Porta-voz: ${item.portaVoz}` : item.etapa}
-                </span>
-                <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground/50 group-hover:translate-x-0.5 transition-transform" />
-              </div>
-            </button>
-          ))}
+                  <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground/50 group-hover:translate-x-0.5 transition-transform" />
+                </div>
+              </button>
+            );
+          })}
         </div>
       </SheetContent>
     </Sheet>
