@@ -105,18 +105,15 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
     <>
       <Sidebar collapsible="icon" className="border-r-0">
         <SidebarHeader className="h-24 justify-center border-b border-sidebar-border px-4">
-          <div className="flex flex-col gap-2 group-data-[collapsible=icon]:hidden">
+          <div className="flex flex-col items-center gap-1.5 group-data-[collapsible=icon]:hidden">
             <img
               src={LOGO_ALLIAGE_EXPERIENCE}
               alt="Alliage Experience"
-              className="h-10 w-auto self-start object-contain"
+              className="object-contain" style={{height: '86px', width: '196px'}}
             />
-            <div className="flex items-center gap-2">
-              <span className="h-px w-4 bg-[oklch(0.64_0.27_350)]" />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-sidebar-foreground/50 whitespace-nowrap">
-                Portal de Captação
-              </span>
-            </div>
+            <span className="text-[9px] font-medium uppercase tracking-[0.14em] text-sidebar-foreground/40 whitespace-nowrap">
+              Portal de Captação
+            </span>
           </div>
           <div className="hidden h-9 w-9 items-center justify-center rounded-lg bg-primary text-white shrink-0 group-data-[collapsible=icon]:flex mx-auto">
             <Video className="h-5 w-5" />
