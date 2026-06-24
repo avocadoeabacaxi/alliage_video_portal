@@ -198,6 +198,7 @@ export type ContentFieldUpdate = {
   formatoApariciao?: string | null;
   pessoaApareceu?: string | null;
   localGravacao?: string | null;
+  gravadoPor?: string | null;
 };
 
 export async function updateContentFields(
@@ -223,10 +224,16 @@ export async function updateContentFields(
   if (fields.pessoaApareceu !== undefined)
     set.pessoaApareceu = fields.pessoaApareceu;
   if (fields.localGravacao !== undefined) set.localGravacao = fields.localGravacao;
+  // Permite renomear ou zerar quem gravou explicitamente.
+  if (fields.gravadoPor !== undefined) set.gravadoPor = fields.gravadoPor;
 
   // Se ainda não há responsável e o usuário começou a preencher dados de produção,
-  // registra automaticamente quem está atuando.
-  if (!current.gravadoPor && (fields.observacoes || fields.linkVideoFinal)) {
+  // registra automaticamente quem está atuando (apenas se não foi passado gravadoPor explicitamente).
+  if (
+    fields.gravadoPor === undefined &&
+    !current.gravadoPor &&
+    (fields.observacoes || fields.linkVideoFinal)
+  ) {
     set.gravadoPor = user.name ?? "Membro da equipe";
     set.gravadoPorOpenId = user.openId;
   }

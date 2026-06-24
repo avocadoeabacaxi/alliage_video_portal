@@ -61,6 +61,8 @@ export default function ConteudoDetalhe() {
   const [pessoaApareceu, setPessoaApareceu] = useState("");
   const [localGravacao, setLocalGravacao] = useState("");
   const [categoriaHero, setCategoriaHero] = useState<string | null>(null);
+  const [gravadoPorEdit, setGravadoPorEdit] = useState("");
+  const [editandoGravadoPor, setEditandoGravadoPor] = useState(false);
 
   // Modal exibido ao marcar como "Gravado".
   const [gravadoModalOpen, setGravadoModalOpen] = useState(false);
@@ -87,6 +89,7 @@ export default function ConteudoDetalhe() {
       setPessoaApareceu(content.pessoaApareceu ?? "");
       setLocalGravacao(content.localGravacao ?? "");
       setCategoriaHero((content as any).categoriaHero ?? null);
+      setGravadoPorEdit(content.gravadoPor ?? "");
     }
   }, [content]);
 
@@ -203,6 +206,31 @@ export default function ConteudoDetalhe() {
       localGravacao: localGravacao || null,
       categoriaHero: (categoriaHero || null) as any,
     });
+  }
+
+  function handleSaveGravadoPor() {
+    updateFields.mutate(
+      { id, gravadoPor: gravadoPorEdit.trim() || null },
+      {
+        onSuccess: () => {
+          setEditandoGravadoPor(false);
+          toast.success("Nome atualizado");
+        },
+      },
+    );
+  }
+
+  function handleZerarData(campo: "dataGravacao" | "dataAgendada") {
+    updateFields.mutate(
+      { id, [campo]: null },
+      {
+        onSuccess: () => {
+          if (campo === "dataGravacao") setDataGravacao("");
+          else setDataAgendada("");
+          toast.success("Data removida");
+        },
+      },
+    );
   }
 
   return (
@@ -371,7 +399,53 @@ export default function ConteudoDetalhe() {
               {content.gravadoPor ? (
                 <div className="space-y-2">
                   <div>
-                    <p className="font-semibold">{content.gravadoPor}</p>
+                    {editandoGravadoPor ? (
+                      <div className="flex gap-1.5 items-center">
+                        <Input
+                          className="h-7 text-sm"
+                          value={gravadoPorEdit}
+                          onChange={(e) => setGravadoPorEdit(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleSaveGravadoPor();
+                            if (e.key === "Escape") setEditandoGravadoPor(false);
+                          }}
+                          autoFocus
+                        />
+                        <Button
+                          size="sm"
+                          className="h-7 px-2 text-xs"
+                          onClick={handleSaveGravadoPor}
+                          disabled={updateFields.isPending}
+                        >
+                          {updateFields.isPending ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            "Salvar"
+                          )}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 px-2 text-xs"
+                          onClick={() => setEditandoGravadoPor(false)}
+                        >
+                          Cancelar
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold">{content.gravadoPor}</p>
+                        <button
+                          onClick={() => {
+                            setGravadoPorEdit(content.gravadoPor ?? "");
+                            setEditandoGravadoPor(true);
+                          }}
+                          className="text-[10px] text-muted-foreground underline hover:text-foreground transition-colors"
+                        >
+                          renomear
+                        </button>
+                      </div>
+                    )}
                     {content.dataGravacao && (
                       <p className="text-muted-foreground text-xs mt-0.5">
                         Gravado em{" "}
@@ -433,24 +507,54 @@ export default function ConteudoDetalhe() {
                   <CalendarClock className="h-4 w-4 text-[oklch(0.64_0.27_350)]" />
                   Data agendada (cronograma)
                 </Label>
-                <Input
-                  id="agendada"
-                  type="date"
-                  value={dataAgendada}
-                  onChange={(e) => setDataAgendada(e.target.value)}
-                />
+                <div className="flex gap-1.5">
+                  <Input
+                    id="agendada"
+                    type="date"
+                    value={dataAgendada}
+                    onChange={(e) => setDataAgendada(e.target.value)}
+                    className="flex-1"
+                  />
+                  {(dataAgendada || content.dataAgendada) && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-9 px-2 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 shrink-0"
+                      onClick={() => handleZerarData("dataAgendada")}
+                      disabled={updateFields.isPending}
+                      title="Remover data agendada"
+                    >
+                      Zerar
+                    </Button>
+                  )}
+                </div>
                 <p className="text-xs text-muted-foreground">
                   Aparece na Agenda do mês. Deixe em branco para remover do cronograma.
                 </p>
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="data">Data de gravação (realizada)</Label>
-                <Input
-                  id="data"
-                  type="date"
-                  value={dataGravacao}
-                  onChange={(e) => setDataGravacao(e.target.value)}
-                />
+                <div className="flex gap-1.5">
+                  <Input
+                    id="data"
+                    type="date"
+                    value={dataGravacao}
+                    onChange={(e) => setDataGravacao(e.target.value)}
+                    className="flex-1"
+                  />
+                  {(dataGravacao || content.dataGravacao) && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-9 px-2 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 shrink-0"
+                      onClick={() => handleZerarData("dataGravacao")}
+                      disabled={updateFields.isPending}
+                      title="Remover data de gravação"
+                    >
+                      Zerar
+                    </Button>
+                  )}
+                </div>
               </div>
               <div className="space-y-1.5">
                 <Label className="flex items-center gap-1.5">

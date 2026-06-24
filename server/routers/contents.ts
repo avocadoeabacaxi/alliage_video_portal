@@ -145,6 +145,7 @@ export const contentsRouter = router({
           .optional(),
         dataGravacao: z.date().nullable().optional(),
         dataAgendada: z.date().nullable().optional(),
+        gravadoPor: z.string().max(200).nullable().optional(),
         formatoApariciao: z
           .enum(["Pessoa real", "IA", "Off / Locução"])
           .nullable()

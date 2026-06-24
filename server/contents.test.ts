@@ -286,6 +286,37 @@ describe("contents procedures (autenticado)", () => {
       }),
     ).rejects.toBeTruthy();
   });
+
+  it("permite renomear quem gravou via updateFields", async () => {
+    store.get(1)!.gravadoPor = "Nome Antigo";
+    const caller = appRouter.createCaller(ctxFor(authUser));
+    const updated = await caller.contents.updateFields({
+      id: 1,
+      gravadoPor: "Nome Corrigido",
+    });
+    expect(updated?.gravadoPor).toBe("Nome Corrigido");
+  });
+
+  it("permite zerar quem gravou passando null", async () => {
+    store.get(1)!.gravadoPor = "Maria Silva";
+    const caller = appRouter.createCaller(ctxFor(authUser));
+    const updated = await caller.contents.updateFields({ id: 1, gravadoPor: null });
+    expect(updated?.gravadoPor).toBeNull();
+  });
+
+  it("zera dataGravacao ao passar null em updateFields", async () => {
+    store.get(1)!.dataGravacao = new Date(2026, 5, 10);
+    const caller = appRouter.createCaller(ctxFor(authUser));
+    const updated = await caller.contents.updateFields({ id: 1, dataGravacao: null });
+    expect(updated?.dataGravacao).toBeNull();
+  });
+
+  it("zera dataAgendada ao passar null em updateFields", async () => {
+    store.get(1)!.dataAgendada = new Date(2026, 5, 20);
+    const caller = appRouter.createCaller(ctxFor(authUser));
+    const updated = await caller.contents.updateFields({ id: 1, dataAgendada: null });
+    expect(updated?.dataAgendada).toBeNull();
+  });
 });
 
 describe("agenda (cronograma mensal)", () => {

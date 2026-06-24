@@ -84,3 +84,9 @@
 - [x] Testes: categoriaHero adicionado ao Row/freshRow, 3 novos testes (salva, remove, rejeita inválido) — 22 testes passando
 - [x] TypeScript: pnpm check sem erros
 - [x] Checkpoint e entrega
+
+## Edição de "quem gravou" e zerar datas
+- [x] Backend: updateFields aceitar gravadoPor (string | null) e dataGravacao (Date | null)
+- [x] Ficha: campo editável para renomear "quem gravou" (inline edit ou botão de editar)
+- [x] Ficha: botão "Zerar" ao lado da data de gravação (dataGravacao) e da data agendada (dataAgendada)
+- [x] Testes vitest atualizados + checkpoint
