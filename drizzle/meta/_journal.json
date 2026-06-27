@@ -43,6 +43,13 @@
       "when": 1782170919124,
       "tag": "0005_rich_swordsman",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1782391392983,
+      "tag": "0006_short_magneto",
+      "breakpoints": true
     }
   ]
 }

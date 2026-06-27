@@ -1,0 +1,1 @@
+ALTER TABLE `contents` ADD `tipo` enum('Convencional','Hero') DEFAULT 'Convencional' NOT NULL;

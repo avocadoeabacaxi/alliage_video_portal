@@ -32,3 +32,20 @@ export const TRIMESTRES = [
 ] as const;
 
 export const ETAPAS = ["Engajar", "Inspirar", "Educar", "Converter"] as const;
+
+export const PRODUTOS = [
+  "Cadeira",
+  "Imagem intraoral",
+  "Imagem extraoral",
+  "Scanner",
+  "Autoclave",
+  "Bomba a vácuo",
+  "Compressor",
+  "Ultrassom Odontológico",
+  "Peças de mão",
+  "Mocho",
+] as const;
+export type Produto = (typeof PRODUTOS)[number];
+
+export const TIPOS = ["Convencional", "Hero"] as const;
+export type TipoConteudo = (typeof TIPOS)[number];

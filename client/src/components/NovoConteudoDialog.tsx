@@ -23,6 +23,8 @@ import {
   ETAPAS,
   PRIORIDADES,
   PRIORIDADE_LABELS,
+  PRODUTOS,
+  TIPOS,
   TRILHAS,
   TRILHA_LABELS,
   TRIMESTRES,
@@ -34,6 +36,7 @@ type FormState = {
   trilha: string;
   etapa: string;
   bloco: string;
+  tipo: string;
   titulo: string;
   publico: string;
   formatoProducao: string;
@@ -53,6 +56,7 @@ const EMPTY: FormState = {
   trilha: "",
   etapa: "",
   bloco: "",
+  tipo: "Convencional",
   titulo: "",
   publico: "",
   formatoProducao: "",
@@ -93,9 +97,9 @@ export function NovoConteudoDialog({ onCreated }: { onCreated?: () => void }) {
   }
 
   function handleSubmit() {
-    if (!form.trilha) return toast.error("Selecione a trilha.");
+    if (!form.trilha) return toast.error("Selecione a marca.");
     if (!form.etapa) return toast.error("Selecione a etapa.");
-    if (!form.bloco.trim()) return toast.error("Informe o bloco.");
+    if (!form.bloco.trim()) return toast.error("Informe o produto.");
     if (!form.titulo.trim()) return toast.error("Informe o título.");
 
     const orNull = (v: string) => (v.trim() ? v.trim() : null);
@@ -103,6 +107,7 @@ export function NovoConteudoDialog({ onCreated }: { onCreated?: () => void }) {
       trilha: form.trilha,
       etapa: form.etapa,
       bloco: form.bloco.trim(),
+      tipo: (form.tipo || "Convencional") as "Convencional" | "Hero",
       titulo: form.titulo.trim(),
       publico: orNull(form.publico),
       formatoProducao: orNull(form.formatoProducao),
@@ -133,7 +138,8 @@ export function NovoConteudoDialog({ onCreated }: { onCreated?: () => void }) {
         </DialogHeader>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-2">
-          <Field label="Trilha *">
+          {/* Marca */}
+          <Field label="Marca *">
             <Select value={form.trilha} onValueChange={(v) => set("trilha", v)}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione" />
@@ -148,7 +154,8 @@ export function NovoConteudoDialog({ onCreated }: { onCreated?: () => void }) {
             </Select>
           </Field>
 
-          <Field label="Etapa / Finalidade *">
+          {/* Etapa */}
+          <Field label="Etapa *">
             <Select value={form.etapa} onValueChange={(v) => set("etapa", v)}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione" />
@@ -163,14 +170,39 @@ export function NovoConteudoDialog({ onCreated }: { onCreated?: () => void }) {
             </Select>
           </Field>
 
-          <Field label="Bloco *">
-            <Input
-              value={form.bloco}
-              onChange={(e) => set("bloco", e.target.value)}
-              placeholder="Ex.: Bloco 1 - Apresentação"
-            />
+          {/* Produto (bloco) */}
+          <Field label="Produto *">
+            <Select value={form.bloco} onValueChange={(v) => set("bloco", v)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o produto" />
+              </SelectTrigger>
+              <SelectContent>
+                {PRODUTOS.map((p) => (
+                  <SelectItem key={p} value={p}>
+                    {p}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </Field>
 
+          {/* Tipo */}
+          <Field label="Tipo">
+            <Select value={form.tipo} onValueChange={(v) => set("tipo", v)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
+              <SelectContent>
+                {TIPOS.map((t) => (
+                  <SelectItem key={t} value={t}>
+                    {t}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+
+          {/* Prioridade */}
           <Field label="Prioridade">
             <Select
               value={form.prioridade}
@@ -189,6 +221,7 @@ export function NovoConteudoDialog({ onCreated }: { onCreated?: () => void }) {
             </Select>
           </Field>
 
+          {/* Título */}
           <Field label="Título *" full>
             <Input
               value={form.titulo}
@@ -197,6 +230,7 @@ export function NovoConteudoDialog({ onCreated }: { onCreated?: () => void }) {
             />
           </Field>
 
+          {/* Trimestre */}
           <Field label="Trimestre">
             <Select
               value={form.trimestre}
@@ -249,22 +283,13 @@ export function NovoConteudoDialog({ onCreated }: { onCreated?: () => void }) {
           </Field>
 
           <Field label="Tópico 1">
-            <Input
-              value={form.topico1}
-              onChange={(e) => set("topico1", e.target.value)}
-            />
+            <Input value={form.topico1} onChange={(e) => set("topico1", e.target.value)} />
           </Field>
           <Field label="Tópico 2">
-            <Input
-              value={form.topico2}
-              onChange={(e) => set("topico2", e.target.value)}
-            />
+            <Input value={form.topico2} onChange={(e) => set("topico2", e.target.value)} />
           </Field>
           <Field label="Tópico 3">
-            <Input
-              value={form.topico3}
-              onChange={(e) => set("topico3", e.target.value)}
-            />
+            <Input value={form.topico3} onChange={(e) => set("topico3", e.target.value)} />
           </Field>
 
           <Field label="Palavras-chave">
@@ -283,10 +308,7 @@ export function NovoConteudoDialog({ onCreated }: { onCreated?: () => void }) {
           </Field>
 
           <Field label="CTA (Chamada para ação)" full>
-            <Input
-              value={form.cta}
-              onChange={(e) => set("cta", e.target.value)}
-            />
+            <Input value={form.cta} onChange={(e) => set("cta", e.target.value)} />
           </Field>
         </div>
 
@@ -296,9 +318,7 @@ export function NovoConteudoDialog({ onCreated }: { onCreated?: () => void }) {
           </Button>
           <Button onClick={handleSubmit} disabled={createMut.isPending}>
             {createMut.isPending ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Salvando...
-              </>
+              <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Salvando...</>
             ) : (
               "Criar conteúdo"
             )}
@@ -320,9 +340,7 @@ function Field({
 }) {
   return (
     <div className={`space-y-1.5 ${full ? "sm:col-span-2" : ""}`}>
-      <Label className="text-xs font-medium text-muted-foreground">
-        {label}
-      </Label>
+      <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
       {children}
     </div>
   );

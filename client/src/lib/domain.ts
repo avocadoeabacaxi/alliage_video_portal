@@ -67,7 +67,25 @@ export const TRIMESTRES = [
 
 export const ETAPAS = ["Engajar", "Inspirar", "Educar", "Converter"] as const;
 
-// Categorias temáticas "Hero" (destaque dourado). Conteúdo pode ter uma ou nenhuma.
+// Lista completa de produtos (anteriormente chamado "Bloco").
+export const PRODUTOS = [
+  "Cadeira",
+  "Imagem intraoral",
+  "Imagem extraoral",
+  "Scanner",
+  "Autoclave",
+  "Bomba a vácuo",
+  "Compressor",
+  "Ultrassom Odontológico",
+  "Peças de mão",
+  "Mocho",
+] as const;
+
+// Tipos de conteúdo: Convencional (padrão) ou Hero (destaque dourado).
+export const TIPOS = ["Convencional", "Hero"] as const;
+export type TipoConteudo = (typeof TIPOS)[number];
+
+// Categorias temáticas (independente do tipo Hero). Conteúdo pode ter uma ou nenhuma.
 export const CATEGORIAS_HERO = [
   "Odontologia Digital",
   "Excelência Clínica",

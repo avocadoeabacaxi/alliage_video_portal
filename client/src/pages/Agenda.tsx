@@ -55,6 +55,7 @@ type AgendaItem = {
   formatoProducao: string | null;
   dataAgendada: Date | null;
   categoriaHero?: string | null;
+  tipo?: string | null;
 };
 
 function dayKey(d: Date) {
@@ -210,7 +211,7 @@ export default function Agenda() {
                 new Set(items.map((i) => i.trilha)),
               );
               // Verifica se algum item do dia é Hero
-              const hasHero = items.some((i) => i.categoriaHero);
+              const hasHero = items.some((i) => i.tipo === "Hero");
               return (
                 <button
                   key={idx}
@@ -312,7 +313,7 @@ function DaySheet({
 
         <div className="px-4 pb-6 space-y-3">
           {items.map((item) => {
-            const isHero = !!item.categoriaHero;
+            const isHero = item.tipo === "Hero";
             return (
               <button
                 key={item.id}
@@ -343,8 +344,13 @@ function DaySheet({
                       {prioridadeLabel(item.prioridade)}
                     </span>
                   )}
-                  {isHero && (
-                    <CategoriaHeroBadge categoria={item.categoriaHero!} />
+                  {item.tipo === "Hero" && (
+                    <span className="inline-flex items-center gap-1 rounded-full font-semibold border px-2 py-0.5 text-[10px] bg-amber-50 border-amber-300 text-amber-700">
+                      ⭐ Hero
+                    </span>
+                  )}
+                  {item.categoriaHero && (
+                    <CategoriaHeroBadge categoria={item.categoriaHero} />
                   )}
                 </div>
                 <p className="font-medium leading-snug text-foreground">

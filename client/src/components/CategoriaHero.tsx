@@ -50,7 +50,7 @@ export function CategoriaHeroSelector({ value, onChange, disabled }: CategoriaHe
   return (
     <div className="space-y-2">
       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-        Categoria Hero
+        Categoria temática
       </p>
       <div className="flex flex-wrap gap-2">
         {CATEGORIAS_HERO.map((cat) => {
@@ -105,7 +105,7 @@ export function CategoriaHeroSelector({ value, onChange, disabled }: CategoriaHe
       </div>
       {value && (
         <p className="text-xs text-amber-600 font-medium">
-          ★ Este conteúdo será destacado em dourado na lista e na agenda.
+          ★ Categoria selecionada. Combine com o tipo Hero para destaque dourado.
         </p>
       )}
     </div>

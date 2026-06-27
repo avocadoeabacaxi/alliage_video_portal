@@ -100,6 +100,7 @@ export type ContentFilters = {
   bloco?: string;
   responsavel?: string; // gravadoPor (texto)
   categoriaHero?: string; // Odontologia Digital / Excelência Clínica / Negócios e Carreiras
+  tipo?: string; // Convencional | Hero
   search?: string; // busca no título
   limit?: number;
   offset?: number;
@@ -115,6 +116,7 @@ function buildConditions(f: ContentFilters) {
   if (f.bloco) conds.push(eq(contents.bloco, f.bloco));
   if (f.responsavel) conds.push(eq(contents.gravadoPor, f.responsavel));
   if (f.categoriaHero) conds.push(eq(contents.categoriaHero, f.categoriaHero));
+  if (f.tipo) conds.push(eq(contents.tipo, f.tipo as any));
   if (f.search) conds.push(like(contents.titulo, `%${f.search}%`));
   return conds.length ? and(...conds) : undefined;
 }
@@ -190,6 +192,7 @@ export async function updateContentStatus(
 
 export type ContentFieldUpdate = {
   categoriaHero?: string | null;
+  tipo?: string | null;
   observacoes?: string | null;
   linkAprovacao?: string | null;
   linkVideoFinal?: string | null;
@@ -214,6 +217,7 @@ export async function updateContentFields(
 
   const set: Record<string, unknown> = {};
   if (fields.categoriaHero !== undefined) set.categoriaHero = fields.categoriaHero;
+  if (fields.tipo !== undefined) set.tipo = fields.tipo;
   if (fields.observacoes !== undefined) set.observacoes = fields.observacoes;
   if (fields.linkAprovacao !== undefined) set.linkAprovacao = fields.linkAprovacao;
   if (fields.linkVideoFinal !== undefined) set.linkVideoFinal = fields.linkVideoFinal;
@@ -366,6 +370,7 @@ export type NewContentInput = {
   trilha: string;
   etapa: string;
   bloco: string;
+  tipo?: "Convencional" | "Hero" | null;
   titulo: string;
   publico?: string | null;
   formatoProducao?: string | null;
@@ -397,6 +402,7 @@ export async function createContent(input: NewContentInput) {
     ordem: nextOrdem,
     etapa: input.etapa,
     bloco: input.bloco,
+    tipo: (input.tipo ?? "Convencional") as any,
     titulo: input.titulo,
     publico: input.publico ?? null,
     formatoProducao: input.formatoProducao ?? null,

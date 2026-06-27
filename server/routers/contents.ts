@@ -31,6 +31,7 @@ export const contentsRouter = router({
           bloco: z.string().optional(),
           responsavel: z.string().optional(),
           categoriaHero: z.string().optional(),
+          tipo: z.enum(["Convencional", "Hero"]).optional(),
           search: z.string().optional(),
           limit: z.number().int().min(1).max(100).optional(),
           offset: z.number().int().min(0).optional(),
@@ -59,6 +60,7 @@ export const contentsRouter = router({
         trilha: z.string().min(1, "Selecione a trilha"),
         etapa: z.string().min(1, "Selecione a etapa"),
         bloco: z.string().min(1, "Informe o bloco"),
+        tipo: z.enum(["Convencional", "Hero"]).optional(),
         titulo: z.string().min(1, "Informe o título"),
         publico: z.string().nullable().optional(),
         formatoProducao: z.string().nullable().optional(),
@@ -132,6 +134,7 @@ export const contentsRouter = router({
           .enum(["Odontologia Digital", "Excelência Clínica", "Negócios e Carreiras"])
           .nullable()
           .optional(),
+        tipo: z.enum(["Convencional", "Hero"]).nullable().optional(),
         observacoes: z.string().max(2000).nullable().optional(),
         linkAprovacao: z
           .string()

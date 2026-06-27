@@ -52,8 +52,10 @@ export const contents = mysqlTable("contents", {
   dadoMercado: text("dadoMercado"),
   cta: text("cta"),
 
-  /** Categoria temática "Hero" (destaque dourado): "Odontologia Digital" | "Excelência Clínica" | "Negócios e Carreiras" | null. */
+  /** Categoria temática: "Odontologia Digital" | "Excelência Clínica" | "Negócios e Carreiras" | null. */
   categoriaHero: varchar("categoriaHero", { length: 48 }),
+  /** Tipo do conteúdo: "Convencional" (padrão) | "Hero" (destaque dourado). */
+  tipo: mysqlEnum("tipo", ["Convencional", "Hero"]).default("Convencional").notNull(),
 
   // ---- Campos de produção (editáveis no portal) ----
   status: mysqlEnum("status", [

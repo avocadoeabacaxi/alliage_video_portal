@@ -26,7 +26,9 @@ import {
   PRIORIDADES,
   PRIORIDADE_LABELS,
   PRIORIDADE_STYLES,
+  PRODUTOS,
   STATUS_FLOW,
+  TIPOS,
   TRILHAS,
   TRILHA_LABELS,
   TRIMESTRES,
@@ -55,13 +57,9 @@ export default function Conteudos() {
   const [bloco, setBloco] = useState(ALL);
   const [responsavel, setResponsavel] = useState(ALL);
   const [categoriaHero, setCategoriaHero] = useState(ALL);
+  const [tipo, setTipo] = useState(ALL);
 
-  // Conteúdo marcado para exclusão (abre o diálogo de confirmação).
-  const [toDelete, setToDelete] = useState<{ id: number; titulo: string } | null>(
-    null,
-  );
-
-  // Quantos itens estão visíveis no momento (cresce de 20 em 20).
+  const [toDelete, setToDelete] = useState<{ id: number; titulo: string } | null>(null);
   const [visible, setVisible] = useState(PAGE_SIZE);
 
   const utils = trpc.useUtils();
@@ -77,27 +75,20 @@ export default function Conteudos() {
       bloco: bloco === ALL ? undefined : bloco,
       responsavel: responsavel === ALL ? undefined : responsavel,
       categoriaHero: categoriaHero === ALL ? undefined : categoriaHero,
+      tipo: tipo === ALL ? undefined : (tipo as "Convencional" | "Hero"),
     }),
-    [search, trilha, status, prioridade, trimestre, etapa, bloco, responsavel, categoriaHero],
+    [search, trilha, status, prioridade, trimestre, etapa, bloco, responsavel, categoriaHero, tipo],
   );
 
-  // Sempre que os filtros mudam, volta para a primeira "página".
-  useEffect(() => {
-    setVisible(PAGE_SIZE);
-  }, [baseFilters]);
-
-  // Ao trocar de trilha, reinicia o filtro de bloco (blocos dependem da trilha).
-  useEffect(() => {
-    setBloco(ALL);
-  }, [trilha]);
+  useEffect(() => { setVisible(PAGE_SIZE); }, [baseFilters]);
+  useEffect(() => { setBloco(ALL); }, [trilha]);
 
   const filters = useMemo(
     () => ({ ...baseFilters, limit: visible, offset: 0 }),
     [baseFilters, visible],
   );
 
-  const { data, isLoading, isFetching, isError } =
-    trpc.contents.list.useQuery(filters);
+  const { data, isLoading, isFetching, isError } = trpc.contents.list.useQuery(filters);
   const { data: responsaveis } = trpc.contents.responsaveis.useQuery();
   const blocoQuery = useMemo(
     () => ({ trilha: trilha === ALL ? undefined : trilha }),
@@ -124,39 +115,23 @@ export default function Conteudos() {
   const hasMore = contents.length < total;
 
   const hasFilter =
-    trilha !== ALL ||
-    status !== ALL ||
-    prioridade !== ALL ||
-    trimestre !== ALL ||
-    etapa !== ALL ||
-    bloco !== ALL ||
-    responsavel !== ALL ||
-    categoriaHero !== ALL ||
-    search.trim() !== "";
+    trilha !== ALL || status !== ALL || prioridade !== ALL || trimestre !== ALL ||
+    etapa !== ALL || bloco !== ALL || responsavel !== ALL || categoriaHero !== ALL ||
+    tipo !== ALL || search.trim() !== "";
 
   function clearFilters() {
-    setSearch("");
-    setTrilha(ALL);
-    setStatus(ALL);
-    setPrioridade(ALL);
-    setTrimestre(ALL);
-    setEtapa(ALL);
-    setBloco(ALL);
-    setResponsavel(ALL);
-    setCategoriaHero(ALL);
+    setSearch(""); setTrilha(ALL); setStatus(ALL); setPrioridade(ALL);
+    setTrimestre(ALL); setEtapa(ALL); setBloco(ALL); setResponsavel(ALL);
+    setCategoriaHero(ALL); setTipo(ALL);
   }
 
   return (
     <div className="space-y-5 max-w-7xl">
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-            Conteúdos
-          </h1>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Conteúdos</h1>
           <p className="text-muted-foreground mt-1">
-            {data
-              ? `Mostrando ${contents.length} de ${total} conteúdos`
-              : "Carregando..."}{" "}
+            {data ? `Mostrando ${contents.length} de ${total} conteúdos` : "Carregando..."}{" "}
             • filtre, busque e abra a ficha para gerenciar a produção.
           </p>
         </div>
@@ -192,13 +167,13 @@ export default function Conteudos() {
           <FilterSelect
             value={trilha}
             onChange={setTrilha}
-            placeholder="Trilha"
+            placeholder="Marcas"
             options={TRILHAS.map((t) => ({ value: t, label: TRILHA_LABELS[t] }))}
           />
           <FilterSelect
             value={etapa}
             onChange={setEtapa}
-            placeholder="Finalidade"
+            placeholder="Etapas"
             options={ETAPAS.map((e) => ({ value: e, label: e }))}
           />
           <FilterSelect
@@ -211,10 +186,7 @@ export default function Conteudos() {
             value={prioridade}
             onChange={setPrioridade}
             placeholder="Prioridade"
-            options={PRIORIDADES.map((p) => ({
-              value: p,
-              label: PRIORIDADE_LABELS[p],
-            }))}
+            options={PRIORIDADES.map((p) => ({ value: p, label: PRIORIDADE_LABELS[p] }))}
           />
           <FilterSelect
             value={trimestre}
@@ -225,8 +197,8 @@ export default function Conteudos() {
           <FilterSelect
             value={bloco}
             onChange={setBloco}
-            placeholder="Bloco"
-            options={(blocos ?? []).map((b) => ({ value: b, label: b }))}
+            placeholder="Produtos"
+            options={PRODUTOS.map((p) => ({ value: p, label: p }))}
           />
           <FilterSelect
             value={responsavel}
@@ -237,8 +209,14 @@ export default function Conteudos() {
           <FilterSelect
             value={categoriaHero}
             onChange={setCategoriaHero}
-            placeholder="Categoria Hero"
+            placeholder="Categoria"
             options={CATEGORIAS_HERO.map((c) => ({ value: c, label: c }))}
+          />
+          <FilterSelect
+            value={tipo}
+            onChange={setTipo}
+            placeholder="Tipo"
+            options={TIPOS.map((t) => ({ value: t, label: t }))}
           />
         </div>
       </Card>
@@ -261,7 +239,7 @@ export default function Conteudos() {
       ) : (
         <div className="space-y-2">
           {contents.map((c) => {
-            const isHero = !!(c as any).categoriaHero;
+            const isHero = (c as any).tipo === "Hero";
             return (
               <Card
                 key={c.id}
@@ -278,9 +256,7 @@ export default function Conteudos() {
                   >
                     <div className="flex flex-col items-center justify-center w-12 shrink-0">
                       <span className="text-xs text-muted-foreground">#</span>
-                      <span className="text-sm font-bold text-primary">
-                        {c.ordem}
-                      </span>
+                      <span className="text-sm font-bold text-primary">{c.ordem}</span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2 mb-1.5">
@@ -293,10 +269,13 @@ export default function Conteudos() {
                         <Badge variant="outline" className="text-xs">
                           {c.etapa}
                         </Badge>
-                        <span className="text-xs text-muted-foreground">
-                          {c.bloco}
-                        </span>
-                        {isHero && (
+                        <span className="text-xs text-muted-foreground">{c.bloco}</span>
+                        {(c as any).tipo === "Hero" && (
+                          <Badge className="text-xs bg-amber-100 text-amber-700 border-amber-300 border">
+                            Hero
+                          </Badge>
+                        )}
+                        {(c as any).categoriaHero && (
                           <CategoriaHeroBadge categoria={(c as any).categoriaHero} />
                         )}
                       </div>
@@ -311,9 +290,7 @@ export default function Conteudos() {
                             {PRIORIDADE_LABELS[c.prioridade] ?? c.prioridade}
                           </span>
                         )}
-                        <span className="text-xs text-muted-foreground">
-                          {c.trimestre}
-                        </span>
+                        <span className="text-xs text-muted-foreground">{c.trimestre}</span>
                         {c.gravadoPor && (
                           <span className="text-xs text-muted-foreground">
                             • Gravado por {c.gravadoPor}
@@ -327,9 +304,7 @@ export default function Conteudos() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() =>
-                        setToDelete({ id: c.id, titulo: c.titulo })
-                      }
+                      onClick={() => setToDelete({ id: c.id, titulo: c.titulo })}
                       className="h-7 px-2 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50"
                     >
                       <Trash2 className="h-3.5 w-3.5 mr-1" /> Excluir
@@ -349,9 +324,7 @@ export default function Conteudos() {
                 className="min-w-48"
               >
                 {isFetching ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Carregando...
-                  </>
+                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Carregando...</>
                 ) : (
                   `Carregar mais ${Math.min(PAGE_SIZE, total - contents.length)}`
                 )}
@@ -362,23 +335,17 @@ export default function Conteudos() {
       )}
 
       {/* Confirmação de exclusão */}
-      <AlertDialog
-        open={!!toDelete}
-        onOpenChange={(o) => !o && setToDelete(null)}
-      >
+      <AlertDialog open={!!toDelete} onOpenChange={(o) => !o && setToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir conteúdo?</AlertDialogTitle>
             <AlertDialogDescription>
               Esta ação não pode ser desfeita. O conteúdo
-              {toDelete ? ` "${toDelete.titulo}"` : ""} será removido
-              permanentemente da base.
+              {toDelete ? ` "${toDelete.titulo}"` : ""} será removido permanentemente da base.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleteMut.isPending}>
-              Cancelar
-            </AlertDialogCancel>
+            <AlertDialogCancel disabled={deleteMut.isPending}>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={(e) => {
                 e.preventDefault();
@@ -388,9 +355,7 @@ export default function Conteudos() {
               className="bg-rose-600 hover:bg-rose-700"
             >
               {deleteMut.isPending ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Excluindo...
-                </>
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Excluindo...</>
               ) : (
                 "Excluir"
               )}
@@ -421,7 +386,7 @@ function FilterSelect({
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value={ALL}>{placeholder}: todos</SelectItem>
+        <SelectItem value={ALL}>Todos</SelectItem>
         {options.map((o) => (
           <SelectItem key={o.value} value={o.value}>
             {o.label}

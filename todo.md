@@ -90,3 +90,14 @@
 - [x] Ficha: campo editável para renomear "quem gravou" (inline edit ou botão de editar)
 - [x] Ficha: botão "Zerar" ao lado da data de gravação (dataGravacao) e da data agendada (dataAgendada)
 - [x] Testes vitest atualizados + checkpoint
+
+## Ajustes de nomenclatura e filtros
+- [x] Renomear "Trilha" → "Marcas" em todo o frontend
+- [x] Renomear "Finalidade/Etapa" → "Etapas" em todo o frontend
+- [x] Renomear "Bloco" → "Produtos" e atualizar lista com 10 itens completos
+- [x] Separar categoriaHero: campo "categoria" (3 opções) + campo "tipo" (Convencional/Hero)
+- [x] Adicionar coluna `tipo` no schema (enum: Convencional | Hero) + migração
+- [x] Backend: filtros por tipo e categoria atualizados
+- [x] Frontend: novo filtro "Tipo" (Convencional/Hero) na lista
+- [x] Ficha: seletor de Tipo separado do seletor de Categoria
+- [x] Testes vitest atualizados + checkpoint

@@ -16,6 +16,7 @@ type Row = {
   pessoaApareceu: string | null;
   localGravacao: string | null;
   categoriaHero: string | null;
+  tipo: string;
 };
 
 const store = new Map<number, Row>();
@@ -35,6 +36,7 @@ function freshRow(id: number): Row {
     pessoaApareceu: null,
     localGravacao: null,
     categoriaHero: null,
+    tipo: "Convencional",
   };
 }
 
@@ -376,6 +378,43 @@ describe("criar e excluir conteúdos", () => {
     await caller.contents.delete({ id: 1 });
     const res = await caller.contents.list({});
     expect(res.total).toBe(0);
+  });
+
+  it("cria conteúdo com tipo Hero e persiste", async () => {
+    const caller = appRouter.createCaller(ctxFor(authUser));
+    const created = await caller.contents.create({
+      trilha: "Saevo",
+      etapa: "Educar",
+      bloco: "Cadeira",
+      tipo: "Hero",
+      titulo: "Conteúdo Hero de teste",
+    });
+    expect(created).toBeTruthy();
+    expect((created as any).tipo).toBe("Hero");
+  });
+
+  it("salva tipo Hero via updateFields", async () => {
+    const caller = appRouter.createCaller(ctxFor(authUser));
+    const updated = await caller.contents.updateFields({ id: 1, tipo: "Hero" });
+    expect(updated?.tipo).toBe("Hero");
+  });
+
+  it("volta para Convencional via updateFields", async () => {
+    store.get(1)!.tipo = "Hero";
+    const caller = appRouter.createCaller(ctxFor(authUser));
+    const updated = await caller.contents.updateFields({ id: 1, tipo: "Convencional" });
+    expect(updated?.tipo).toBe("Convencional");
+  });
+
+  it("rejeita tipo inválido em updateFields", async () => {
+    const caller = appRouter.createCaller(ctxFor(authUser));
+    await expect(
+      caller.contents.updateFields({
+        id: 1,
+        // @ts-expect-error valor inválido proposital
+        tipo: "Destaque",
+      }),
+    ).rejects.toBeTruthy();
   });
 
   it("lista etapas e blocos para os filtros", async () => {

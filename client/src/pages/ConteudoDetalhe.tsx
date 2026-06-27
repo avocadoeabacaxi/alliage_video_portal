@@ -21,6 +21,7 @@ import {
   PRIORIDADE_LABELS,
   PRIORIDADE_STYLES,
   STATUS_FLOW,
+  TIPOS,
   trilhaLabel,
 } from "@/lib/domain";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -61,6 +62,7 @@ export default function ConteudoDetalhe() {
   const [pessoaApareceu, setPessoaApareceu] = useState("");
   const [localGravacao, setLocalGravacao] = useState("");
   const [categoriaHero, setCategoriaHero] = useState<string | null>(null);
+  const [tipo, setTipo] = useState<string>("Convencional");
   const [gravadoPorEdit, setGravadoPorEdit] = useState("");
   const [editandoGravadoPor, setEditandoGravadoPor] = useState(false);
 
@@ -89,6 +91,7 @@ export default function ConteudoDetalhe() {
       setPessoaApareceu(content.pessoaApareceu ?? "");
       setLocalGravacao(content.localGravacao ?? "");
       setCategoriaHero((content as any).categoriaHero ?? null);
+      setTipo((content as any).tipo ?? "Convencional");
       setGravadoPorEdit(content.gravadoPor ?? "");
     }
   }, [content]);
@@ -205,6 +208,7 @@ export default function ConteudoDetalhe() {
         formatoApariciao === "Pessoa real" ? pessoaApareceu || null : null,
       localGravacao: localGravacao || null,
       categoriaHero: (categoriaHero || null) as any,
+      tipo: (tipo || "Convencional") as any,
     });
   }
 
@@ -495,7 +499,36 @@ export default function ConteudoDetalhe() {
               <CardTitle className="text-base">Registros da equipe</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Categoria Hero */}
+              {/* Tipo: Convencional / Hero */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Tipo do conteúdo
+                </Label>
+                <div className="flex gap-2">
+                  {TIPOS.map((t) => (
+                    <button
+                      key={t}
+                      type="button"
+                      disabled={updateFields.isPending}
+                      onClick={() => setTipo(t)}
+                      className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-all ${
+                        tipo === t
+                          ? t === "Hero"
+                            ? "border-amber-400 bg-amber-50 text-amber-700"
+                            : "border-primary bg-primary/5 text-primary"
+                          : "border-border hover:bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {t === "Hero" ? "⭐ Hero" : t}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Conteúdos Hero recebem destaque dourado na lista e agenda.
+                </p>
+              </div>
+
+              {/* Categoria temática */}
               <CategoriaHeroSelector
                 value={categoriaHero}
                 onChange={setCategoriaHero}
